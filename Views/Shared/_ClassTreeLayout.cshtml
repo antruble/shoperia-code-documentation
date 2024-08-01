@@ -60,6 +60,10 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSubCategories(null);
+        });
+
         function openModal(title, content) {
             document.getElementById('modalTitle').innerText = title;
             document.getElementById('modalContent').innerText = content;
@@ -78,7 +82,7 @@
                     subCategoriesContainer.innerHTML = '';
                     data.forEach(folder => {
                         const subCategoryLink = document.createElement('a');
-                        subCategoryLink.href = '#';
+                        subCategoryLink.href = `#`;
                         subCategoryLink.classList.add('custom-text', 'hover-custom-text');
                         subCategoryLink.innerHTML = `<div class="p-4"><span>${folder.name}</span></div>`;
                         subCategoryLink.onclick = function (e) {

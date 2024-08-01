@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Services;
 
@@ -10,6 +11,15 @@ namespace ShoperiaDocumentation
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configure Serilog
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.File("Logs/app_log-.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -24,6 +34,9 @@ namespace ShoperiaDocumentation
 
             // Register the FileService
             builder.Services.AddScoped<IFileService, FileService>();
+
+            // Configure Serilog as the logging provider
+            builder.Host.UseSerilog();
 
             var app = builder.Build();
 
@@ -65,7 +78,8 @@ namespace ShoperiaDocumentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=ClassTree}/{action=Index}/{id?}");
+
 
             app.MapRazorPages();
 

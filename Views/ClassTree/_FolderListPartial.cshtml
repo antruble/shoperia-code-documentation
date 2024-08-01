@@ -3,7 +3,7 @@
 @foreach (var folder in Model)
 {
     <div class="inline-block mx-4 my-2">
-        <a href="@Url.Action("GetSubFolders", new { id = folder.Id })" class="custom-text hover-custom-text">
+        <a href="@Url.Action("GetFolders", new { id = folder.Id })" class="custom-text hover-custom-text">
             <div class="p-8 bg-gray-800 rounded-lg">
                 <span>@folder.Name</span>
             </div>

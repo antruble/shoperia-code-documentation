@@ -58,6 +58,32 @@ namespace ShoperiaDocumentation.Services
                 throw;
             }
         }
-        
+        public async Task<int> GetFolderIdByPathAsync(string path)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching folder ID for path {Path}", path);
+                var segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                FolderModel currentFolder = null;
+
+                foreach (var segment in segments)
+                {
+                    currentFolder = await _context.Folders
+                        .FirstOrDefaultAsync(f => f.Name == segment && (currentFolder == null ? f.ParentId == null : f.ParentId == currentFolder.Id));
+
+                    if (currentFolder == null)
+                    {
+                        throw new Exception($"Folder not found for path segment {segment}");
+                    }
+                }
+
+                return currentFolder.Id;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching folder ID for path {Path}", path);
+                throw;
+            }
+        }
     }
 }
