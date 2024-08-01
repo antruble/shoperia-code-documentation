@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
+using ShoperiaDocumentation.Services;
 
 namespace ShoperiaDocumentation
 {
@@ -20,6 +21,9 @@ namespace ShoperiaDocumentation
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+
+            // Register the FileService
+            builder.Services.AddScoped<IFileService, FileService>();
 
             var app = builder.Build();
 

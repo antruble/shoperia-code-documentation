@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
+using ShoperiaDocumentation.Services;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -9,40 +10,57 @@ namespace ShoperiaDocumentation.Controllers
 {
     public class ClassTreeController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IFileService _fileService;
+        private readonly ILogger<ClassTreeController> _logger;
 
-        public ClassTreeController(ApplicationDbContext context)
+        public ClassTreeController(IFileService fileService, ILogger<ClassTreeController> logger)
         {
-            _context = context;
+            _fileService = fileService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            var rootFolders = await _context.Folders
-                .Where(f => f.ParentId == null)
-                .ToListAsync();
-
-            return View(rootFolders);
+            try
+            {
+                var rootFolders = await _fileService.GetRootFoldersAsync();
+                return View(rootFolders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching root folders");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetSubCategories(int parentId)
         {
-            var subFolders = await _context.Folders
-                .Where(f => f.ParentId == parentId)
-                .ToListAsync();
-
-            return Json(subFolders);
+            try
+            {
+                var subFolders = await _fileService.GetFoldersAsync(parentId);
+                return Json(subFolders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching subfolders for parent ID {ParentId}", parentId);
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> GetFolders(int parentId)
         {
-            var folders = await _context.Folders
-                .Where(f => f.ParentId == parentId)
-                .ToListAsync();
-
-            return PartialView("_FolderListPartial", folders);
+            try
+            {
+                var folders = await _fileService.GetFoldersAsync(parentId);
+                return PartialView("_FolderListPartial", folders);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching folders for parent ID {ParentId}", parentId);
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }
