@@ -1,0 +1,59 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentáció</title>
+    <link href="~/css/output.css" rel="stylesheet" />
+    <style>
+        .custom-bg {
+            background-color: #1c1134; /* Egyedi háttérszín */
+        }
+        .custom-text {
+            color: #1c1134; /* Egyedi szövegszín */
+        }
+        .hover-custom-bg:hover {
+            background-color: #1c1134; /* Hover állapotban egyedi háttérszín */
+        }
+        .hover-custom-text:hover {
+            color: #ffffff; /* Hover állapotban egyedi szövegszín */
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 h-screen">
+
+    <div class="flex flex-col md:flex-row justify-around items-center h-screen text-center">
+
+        <!-- Osztályfa -->
+        <a>
+            <div class="w-full md:w-1/3 p-4 h-full">
+                <div class="p-8 rounded-lg hover-custom-bg transition duration-300 ease-in-out">
+                    <img src="/path/to/osztalyfa-icon.png" alt="Osztályfa Icon" class="mx-auto mb-4">
+                    <h2 class="text-2xl font-bold custom-text hover-custom-text">OSZTÁLYFA</h2>
+                </div>
+            </div>
+        </a>
+
+        <!-- Témakörök -->
+        <div class="w-full md:w-1/3 p-4 h-full custom-bg text-white">
+            <div class="p-8 rounded-lg transition duration-300 ease-in-out">
+                <img src="/path/to/temakorok-icon.png" alt="Témakörök Icon" class="mx-auto mb-4">
+                <h2 class="text-2xl font-bold">TÉMAKÖRÖK</h2>
+            </div>
+        </div>
+
+        <!-- Adatbázis -->
+        <div class="w-full md:w-1/3 p-4 h-full">
+            <div class="p-8 rounded-lg hover-custom-bg transition duration-300 ease-in-out">
+                <img src="/path/to/adatbazis-icon.png" alt="Adatbázis Icon" class="mx-auto mb-4">
+                <h2 class="text-2xl font-bold custom-text hover-custom-text">ADATBÁZIS</h2>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
