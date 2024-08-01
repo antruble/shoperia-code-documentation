@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ShoperiaDocumentation.Models;
 
 namespace ShoperiaDocumentation.Data
 {
@@ -9,5 +10,6 @@ namespace ShoperiaDocumentation.Data
             : base(options)
         {
         }
+        public DbSet<FolderModel> Folders { get; set; }
     }
 }

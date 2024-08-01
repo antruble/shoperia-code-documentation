@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using ShoperiaDocumentation.Models;
 
 namespace ShoperiaDocumentation.Data
 {
@@ -53,6 +55,106 @@ namespace ShoperiaDocumentation.Data
                 if (createUser.Succeeded)
                 {
                     await userManager.AddToRoleAsync(basicUser, "User");
+                }
+            }
+
+            // Folder seeding logic
+            using (var context = new ApplicationDbContext(serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
+            {
+                // Ensure the database is created
+                context.Database.EnsureCreated();
+
+                // Look for any folders.
+                if (context.Folders.Any())
+                {
+                    return;   // DB has been seeded
+                }
+
+                // Seed folders
+                var rootFolders = new FolderModel[]
+                {
+                    new FolderModel { Name = "Libraries", ParentId = null, Level = 1 },
+                    new FolderModel { Name = "Presentation", ParentId = null, Level = 1 },
+                    new FolderModel { Name = "Plugins", ParentId = null, Level = 1 }
+                };
+
+                foreach (FolderModel f in rootFolders)
+                {
+                    context.Folders.Add(f);
+                }
+                try
+                {
+                    await context.SaveChangesAsync();
+
+                }
+                catch (Exception ex)
+                {
+
+                    throw new Exception($"{ex.Message}");
+                }
+
+                var subFolders = new FolderModel[]
+                {
+                    // LIBRARIES
+                    new FolderModel { Name = "Nop.Data", ParentId = rootFolders[0].Id, Level = 2 },
+                    new FolderModel { Name = "Nop.Services", ParentId = rootFolders[0].Id, Level = 2 },
+                    new FolderModel { Name = "Nop.Core", ParentId = rootFolders[0].Id, Level = 2 },
+
+                    //PRESENTATION
+                    new FolderModel { Name = "Nop.Web", ParentId = rootFolders[1].Id, Level = 2 },
+                    new FolderModel { Name = "Nop.Web.Framework", ParentId = rootFolders[1].Id, Level = 2 }
+                };
+
+                foreach (FolderModel sf in subFolders)
+                {
+                    context.Folders.Add(sf);
+                }
+                try
+                {
+                    await context.SaveChangesAsync();
+
+                }
+                catch (Exception ex)
+                {
+
+                    throw new Exception($"{ex.Message}");
+                }
+
+                // Add more nested folders as needed
+                var nestedFolders = new FolderModel[]
+                {
+                    new FolderModel { Name = "Folder1", ParentId = subFolders[0].Id, Level = 3 },
+                    new FolderModel { Name = "Folder2", ParentId = subFolders[0].Id, Level = 3 },
+                    new FolderModel { Name = "Folder3", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder4", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder5", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder6", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder7", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder8", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder9", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder10", ParentId = subFolders[1].Id, Level = 3 },
+                    new FolderModel { Name = "Folder11", ParentId = subFolders[2].Id, Level = 3 },
+                    new FolderModel { Name = "Folder12", ParentId = subFolders[2].Id, Level = 3 },
+                    new FolderModel { Name = "Folder13", ParentId = subFolders[3].Id, Level = 3 },
+                    new FolderModel { Name = "Folder14", ParentId = subFolders[3].Id, Level = 3 },
+                    new FolderModel { Name = "Folder15", ParentId = subFolders[4].Id, Level = 3 },
+                    new FolderModel { Name = "Folder16", ParentId = subFolders[4].Id, Level = 3 },
+                    new FolderModel { Name = "Folder17", ParentId = subFolders[4].Id, Level = 3 },
+                };
+
+                foreach (FolderModel nf in nestedFolders)
+                {
+                    context.Folders.Add(nf);
+                }
+                try
+                {
+                    await context.SaveChangesAsync();
+
+                }
+                catch (Exception ex)
+                {
+
+                    throw new Exception($"{ex.Message}");
                 }
             }
         }
