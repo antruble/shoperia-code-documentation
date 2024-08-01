@@ -2,25 +2,23 @@
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
+using ShoperiaDocumentation.Services;
 using System.Threading.Tasks;
 
 namespace ShoperiaDocumentation.ViewComponents
 {
     public class CTMainCategoriesViewComponent : ViewComponent
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IFileService _fileService;
 
-        public CTMainCategoriesViewComponent(ApplicationDbContext context)
+        public CTMainCategoriesViewComponent(IFileService fileService)
         {
-            _context = context;
+            _fileService = fileService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var mainCategories = await _context.Folders
-                .Where(f => f.ParentId == null)
-                .ToListAsync();
-
+            var mainCategories = await _fileService.GetMainCategoriesAsync();
             return View(mainCategories);
         }
     }
