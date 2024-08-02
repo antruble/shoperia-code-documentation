@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShoperiaDocumentation.Data;
-using ShoperiaDocumentation.Models;
 using ShoperiaDocumentation.Services;
 using System.Threading.Tasks;
 
@@ -18,7 +15,7 @@ namespace ShoperiaDocumentation.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var mainCategories = await _fileService.GetMainCategoriesAsync();
+            var mainCategories = await _fileService.GetRootFoldersAsync();
             return View(mainCategories);
         }
     }

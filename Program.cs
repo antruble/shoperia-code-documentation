@@ -78,8 +78,10 @@ namespace ShoperiaDocumentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=ClassTree}/{action=Index}/{id?}");
+    name: "default",
+    pattern: "{controller=ClassTree}/{action=Index}/{path?}");
+
+
 
             app.MapRazorPages();
 

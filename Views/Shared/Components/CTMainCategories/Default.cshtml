@@ -2,9 +2,14 @@
 
 @foreach (var folder in Model)
 {
-    <a href="#" class="custom-text hover-custom-text" onclick="loadSubCategories(@folder.Id)">
+    <a href="#" class="custom-text hover-custom-text" onclick="loadSubCategories('@folder.Name')">
         <div class="p-8 bg-gray-800 rounded-lg">
             <span>@folder.Name</span>
         </div>
     </a>
+    @* <a href="@Url.Action("Index", "ClassTree", new { path = folder.Name })" class="custom-text hover-custom-text">
+        <div class="p-8 bg-gray-800 rounded-lg">
+            <span>@folder.Name</span>
+        </div>
+    </a> *@
 }

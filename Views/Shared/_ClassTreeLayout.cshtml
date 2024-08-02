@@ -61,7 +61,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            loadSubCategories(null);
+            const path = "@ViewBag.CurrentPath";
+            if (path) {
+                loadSubCategories(path);
+                loadFolders(path);
+            }
         });
 
         function openModal(title, content) {
@@ -74,9 +78,16 @@
             document.getElementById('modal').classList.add('hidden');
         }
 
-        function loadSubCategories(parentId) {
-            fetch(`/ClassTree/GetSubCategories?parentId=${parentId}`)
-                .then(response => response.json())
+        function loadSubCategories(path) {
+            const url = `/ClassTree/GetSubCategories?path=${encodeURIComponent(path)}`;
+            console.log('Fetching URL:', url);
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const subCategoriesContainer = document.getElementById('subCategoriesContainer');
                     subCategoriesContainer.innerHTML = '';
@@ -87,15 +98,21 @@
                         subCategoryLink.innerHTML = `<div class="p-4"><span>${folder.name}</span></div>`;
                         subCategoryLink.onclick = function (e) {
                             e.preventDefault();
-                            loadFolders(folder.id);
+                            const newPath = `${path}/${folder.name}`;
+                            window.history.pushState({}, '', newPath);
+                            loadSubCategories(newPath);
+                            loadFolders(newPath);
                         };
                         subCategoriesContainer.appendChild(subCategoryLink);
                     });
+                })
+                .catch(error => {
+                    console.error('Error loading subcategories:', error);
                 });
         }
 
-        function loadFolders(parentId) {
-            fetch(`/ClassTree/GetFolders?parentId=${parentId}`)
+        function loadFolders(path) {
+            fetch(`/ClassTree/GetFolders?path=${encodeURIComponent(path)}`)
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('folderContainer').innerHTML = html;

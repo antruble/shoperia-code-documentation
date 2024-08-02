@@ -29,21 +29,6 @@ namespace ShoperiaDocumentation.Services
                 throw;
             }
         }
-        public async Task<IEnumerable<FolderModel>> GetMainCategoriesAsync()
-        {
-            
-            try
-            {
-                return await _context.Folders
-                .Where(f => f.ParentId == null)
-                .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching main categories");
-                throw;
-            }
-        }
         public async Task<IEnumerable<FolderModel>> GetFoldersAsync(int parentId)
         {
             try
@@ -58,32 +43,31 @@ namespace ShoperiaDocumentation.Services
                 throw;
             }
         }
-        public async Task<int> GetFolderIdByPathAsync(string path)
+        public async Task<IEnumerable<FolderModel>> GetFoldersByPathAsync(string path)
         {
-            try
+            if (string.IsNullOrEmpty(path))
             {
-                _logger.LogInformation("Fetching folder ID for path {Path}", path);
-                var segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                FolderModel currentFolder = null;
+                _logger.LogError("Path is null or empty");
+                return Enumerable.Empty<FolderModel>();
+            }
+            var pathParts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
+            FolderModel parentFolder = null;
 
-                foreach (var segment in segments)
+            foreach (var part in pathParts)
+            {
+                parentFolder = await _context.Folders
+                    .FirstOrDefaultAsync(f => f.Name == part && (parentFolder == null ? f.ParentId == null : f.ParentId == parentFolder.Id));
+
+                if (parentFolder == null)
                 {
-                    currentFolder = await _context.Folders
-                        .FirstOrDefaultAsync(f => f.Name == segment && (currentFolder == null ? f.ParentId == null : f.ParentId == currentFolder.Id));
-
-                    if (currentFolder == null)
-                    {
-                        throw new Exception($"Folder not found for path segment {segment}");
-                    }
+                    _logger.LogError("Folder not found for path part {PathPart}", part);
+                    return Enumerable.Empty<FolderModel>();
                 }
+            }
 
-                return currentFolder.Id;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching folder ID for path {Path}", path);
-                throw;
-            }
+            return parentFolder == null
+                ? await GetRootFoldersAsync()
+                : await GetFoldersAsync(parentFolder.Id);
         }
     }
 }

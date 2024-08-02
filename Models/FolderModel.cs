@@ -17,8 +17,5 @@ namespace ShoperiaDocumentation.Models
         [ForeignKey("ParentId")]
         public FolderModel ParentFolder { get; set; }
 
-        public int Level { get; set; }
-
-        public ICollection<FolderModel> SubFolders { get; set; } = new List<FolderModel>();
     }
 }

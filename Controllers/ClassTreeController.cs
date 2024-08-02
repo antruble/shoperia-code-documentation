@@ -19,47 +19,64 @@ namespace ShoperiaDocumentation.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string path = "")
         {
             try
             {
-                var rootFolders = await _fileService.GetRootFoldersAsync();
-                return View(rootFolders);
+                var folders = string.IsNullOrEmpty(path)
+                    ? await _fileService.GetRootFoldersAsync()
+                    : await _fileService.GetFoldersByPathAsync(path);
+
+                ViewBag.CurrentPath = path;
+                return View(folders);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching root folders");
+                _logger.LogError(ex, "Error fetching folders for path {Path}", path);
                 return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSubCategories(int parentId)
+        public async Task<IActionResult> GetSubCategories(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.LogError("Path is null or empty");
+                return BadRequest("Path cannot be null or empty");
+            }
+
             try
             {
-                var subFolders = await _fileService.GetFoldersAsync(parentId);
+                _logger.LogInformation("Fetching subcategories for path: {Path}", path);
+                var subFolders = await _fileService.GetFoldersByPathAsync(path);
                 return Json(subFolders);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching subfolders for parent ID {ParentId}", parentId);
+                _logger.LogError(ex, "Error fetching subfolders for path {Path}", path);
                 return StatusCode(500, "Internal server error");
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFolders(int parentId)
+        public async Task<IActionResult> GetFolders(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.LogError("Path is null or empty");
+                return BadRequest("Path cannot be null or empty"); // Use BadRequest to return a proper error message
+            }
+
             try
             {
-                var folders = await _fileService.GetFoldersAsync(parentId);
+                var folders = await _fileService.GetFoldersByPathAsync(path);
                 _logger.LogInformation($"GETFOLDERS: {folders.Count()}");
                 return PartialView("_FolderListPartial", folders);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching folders for parent ID {ParentId}", parentId);
+                _logger.LogError(ex, "Error fetching folders for path {Path}", path);
                 return StatusCode(500, "Internal server error");
             }
         }

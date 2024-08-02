@@ -6,7 +6,6 @@ namespace ShoperiaDocumentation.Services
     {
         Task<IEnumerable<FolderModel>> GetRootFoldersAsync();
         Task<IEnumerable<FolderModel>> GetFoldersAsync(int parentId);
-        Task<IEnumerable<FolderModel>> GetMainCategoriesAsync();
-        Task<int> GetFolderIdByPathAsync(string path);
+        Task<IEnumerable<FolderModel>> GetFoldersByPathAsync(string path);
     }
 }
