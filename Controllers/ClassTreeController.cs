@@ -54,6 +54,7 @@ namespace ShoperiaDocumentation.Controllers
             try
             {
                 var folders = await _fileService.GetFoldersAsync(parentId);
+                _logger.LogInformation($"GETFOLDERS: {folders.Count()}");
                 return PartialView("_FolderListPartial", folders);
             }
             catch (Exception ex)

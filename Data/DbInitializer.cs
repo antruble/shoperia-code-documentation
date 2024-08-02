@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Models;
+using Microsoft.Extensions.Logging;
 
 namespace ShoperiaDocumentation.Data
 {
     public static class DbInitializer
     {
-        public static async Task Initialize(IServiceProvider serviceProvider, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task Initialize(IServiceProvider serviceProvider, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, ILogger logger)
         {
+
             string[] roleNames = { "Admin", "User" };
             IdentityResult roleResult;
 
@@ -78,19 +80,16 @@ namespace ShoperiaDocumentation.Data
                     new FolderModel { Name = "Plugins", ParentId = null, Level = 1 }
                 };
 
-                foreach (FolderModel f in rootFolders)
-                {
-                    context.Folders.Add(f);
-                }
+                context.Folders.AddRange(rootFolders);
+
                 try
                 {
                     await context.SaveChangesAsync();
-
                 }
                 catch (Exception ex)
                 {
-
-                    throw new Exception($"{ex.Message}");
+                    logger.LogError(ex, "An error occurred while seeding the root folders.");
+                    throw;
                 }
 
                 var subFolders = new FolderModel[]
@@ -105,19 +104,16 @@ namespace ShoperiaDocumentation.Data
                     new FolderModel { Name = "Nop.Web.Framework", ParentId = rootFolders[1].Id, Level = 2 }
                 };
 
-                foreach (FolderModel sf in subFolders)
-                {
-                    context.Folders.Add(sf);
-                }
+                context.Folders.AddRange(subFolders);
+
                 try
                 {
                     await context.SaveChangesAsync();
-
                 }
                 catch (Exception ex)
                 {
-
-                    throw new Exception($"{ex.Message}");
+                    logger.LogError(ex, "An error occurred while seeding the sub folders.");
+                    throw;
                 }
 
                 // Add more nested folders as needed
@@ -142,20 +138,18 @@ namespace ShoperiaDocumentation.Data
                     new FolderModel { Name = "Folder17", ParentId = subFolders[4].Id, Level = 3 },
                 };
 
-                foreach (FolderModel nf in nestedFolders)
-                {
-                    context.Folders.Add(nf);
-                }
+                context.Folders.AddRange(nestedFolders);
+
                 try
                 {
                     await context.SaveChangesAsync();
-
                 }
                 catch (Exception ex)
                 {
-
-                    throw new Exception($"{ex.Message}");
+                    logger.LogError(ex, "An error occurred while seeding the nested folders.");
+                    throw;
                 }
+
                 var files = new FileModel[]
                 {
                     new FileModel { Name = "File1", ParentId = nestedFolders[0].Id },
@@ -176,6 +170,19 @@ namespace ShoperiaDocumentation.Data
                     new FileModel { Name = "File16", ParentId = nestedFolders[4].Id },
                     new FileModel { Name = "File17", ParentId = nestedFolders[4].Id },
                 };
+
+                context.Files.AddRange(files);
+
+                try
+                {
+                    logger.LogCritical($"FILES FILES FILES {files.Length}");
+                    await context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred while seeding the files.");
+                    throw;
+                }
             }
         }
     }
