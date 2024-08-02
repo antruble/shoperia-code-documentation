@@ -80,7 +80,6 @@
 
         function loadSubCategories(path) {
             const url = `/ClassTree/GetSubCategories?path=${encodeURIComponent(path)}`;
-            console.log('Fetching URL:', url);
             fetch(url)
                 .then(response => {
                     if (!response.ok) {
@@ -99,8 +98,8 @@
                         subCategoryLink.onclick = function (e) {
                             e.preventDefault();
                             const newPath = `${path}/${folder.name}`;
+                            console.log(newPath);
                             window.history.pushState({}, '', newPath);
-                            loadSubCategories(newPath);
                             loadFolders(newPath);
                         };
                         subCategoriesContainer.appendChild(subCategoryLink);

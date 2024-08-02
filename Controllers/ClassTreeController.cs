@@ -50,6 +50,7 @@ namespace ShoperiaDocumentation.Controllers
             {
                 _logger.LogInformation("Fetching subcategories for path: {Path}", path);
                 var subFolders = await _fileService.GetFoldersByPathAsync(path);
+                ViewBag.CurrentPath = path;
                 return Json(subFolders);
             }
             catch (Exception ex)
@@ -71,7 +72,6 @@ namespace ShoperiaDocumentation.Controllers
             try
             {
                 var folders = await _fileService.GetFoldersByPathAsync(path);
-                _logger.LogInformation($"GETFOLDERS: {folders.Count()}");
                 return PartialView("_FolderListPartial", folders);
             }
             catch (Exception ex)
