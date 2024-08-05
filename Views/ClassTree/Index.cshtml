@@ -1,6 +1,30 @@
-﻿@* @model IEnumerable<ShoperiaDocumentation.Models.FolderModel> *@
+﻿@model ShoperiaDocumentation.Models.FolderViewModel
 
 @{
     ViewData["Title"] = "ClassTree";
     Layout = "~/Views/Shared/_ClassTreeLayout.cshtml";
+
+    // Determine the current path, replacing "%2F" with "/" to avoid URL encoding issues
+    var currentPath = Uri.UnescapeDataString(Model.RootName + "/" + Model.SubRootName + "/" + Model.RelativePath);
+    var currentPath2 = Uri.UnescapeDataString(Model.RelativePath);
 }
+<h1>@currentPath</h1>
+<div class="flex justify-around py-8">
+    <div class="w-1/3">
+        <h2 class="text-xl font-semibold text-center">@Model.RootName</h2>
+        <div class="space-y-4 mt-4">
+            @if (Model.Data != null)
+            {
+                foreach (var data in Model.Data)
+                {
+                    var isSelectedSub = data.Name == Model.SubRootName;
+                    var newPath = Uri.UnescapeDataString($"{currentPath}/{data.Name}");
+                    <h1>@newPath</h1>
+                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })" class="block p-4 rounded-lg text-center @(isSelectedSub ? "bg-gray-700" : "bg-gray-800") hover:bg-gray-700">
+                        @data.Name
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>

@@ -1,12 +1,12 @@
 ﻿@model IEnumerable<ShoperiaDocumentation.Models.FolderModel>
 @{
+    var selectedRootName = ViewData["SelectedRootName"] as string;
     var selectedSubRootName = ViewData["SelectedSubRootName"] as string;
 }
-
 @foreach (var folder in Model)
 {
     var isSelected = folder.Name == selectedSubRootName;
-    <a href="#" class="custom-text hover-custom-text @(isSelected ? "bg-gray-700" : "bg-gray-800")" onclick="loadSubCategories('@folder.Name')">
+    <a href="@Url.Action("Index", "ClassTree", new { path = $"{selectedRootName}/{folder.Name}" })?.Replace("%2F", "/")" class="custom-text hover-custom-text @(isSelected ? "bg-gray-700" : "bg-gray-800")">
         <div class="p-8 rounded-lg">
             <span>@folder.Name</span>
         </div>

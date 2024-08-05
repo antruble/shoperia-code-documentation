@@ -98,15 +98,17 @@ namespace ShoperiaDocumentation.Services
             var pathArray = path.Split('/');
             int? parentId = await GetYoungestParentIdAsync(path);
             var data = await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync();
-            
-            var rootName = pathArray[0];
-            string subRootName = pathArray.Length > 1 ? pathArray[1] : "";
+
+            var rootName = pathArray.Length > 0 ? pathArray[0] : string.Empty;
+            var subRootName = pathArray.Length > 1 ? pathArray[1] : string.Empty;
+
+            var relativePath = pathArray.Length > 1 ? string.Join("/", pathArray.Skip(2)) : string.Empty;
 
             var result = new FolderViewModel
             {
                 RootName = rootName,
                 SubRootName = subRootName,
-                RelativePath = "asd0/asd1/asd2",
+                RelativePath = relativePath,
                 Data = data,
             };
 

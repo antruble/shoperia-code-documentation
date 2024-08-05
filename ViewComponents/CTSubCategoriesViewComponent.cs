@@ -16,6 +16,7 @@ namespace ShoperiaDocumentation.ViewComponents
         {
             var selectedRootId = await _fileService.GetFolderIdByNameAndParentIdAsync(selectedRootName, null);
             var subCategories = await _fileService.GetFoldersAsync(selectedRootId);
+            ViewData["SelectedRootName"] = selectedRootName;
             ViewData["SelectedSubRootName"] = selectedSubRootName;
             return View(subCategories);
         }
