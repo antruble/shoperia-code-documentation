@@ -23,12 +23,10 @@ namespace ShoperiaDocumentation.Controllers
         {
             try
             {
-                var folders = string.IsNullOrEmpty(path)
-                    ? await _fileService.GetRootFoldersAsync()
-                    : await _fileService.GetFoldersByPathAsync(path);
-
-                ViewBag.CurrentPath = path;
-                return View(folders);
+                _logger.LogInformation($"PATH:: {path}");
+                var result = await _fileService.GetDataFromUrlAsync(path);
+                _logger.LogInformation($"RESUTL:: {result}");
+                return View(result);
             }
             catch (Exception ex)
             {
@@ -36,6 +34,15 @@ namespace ShoperiaDocumentation.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        [HttpGet]
+        public async Task<FolderViewModel> GetDataByUrl(string path)
+        {
+            var result = await _fileService.GetDataFromUrlAsync(path);
+            return result;
+        }
+
+
+
 
         [HttpGet]
         public async Task<IActionResult> GetSubCategories(string path)

@@ -78,8 +78,16 @@ namespace ShoperiaDocumentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=ClassTree}/{action=Index}/{path?}");
+                name: "classtree",
+                pattern: "ClassTree/{*path}",
+                defaults: new { controller = "ClassTree", action = "Index" });
+
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+            //        app.MapControllerRoute(
+            //name: "default",
+            //pattern: "{controller=ClassTree}/{action=Index}/{path?}");
 
 
 

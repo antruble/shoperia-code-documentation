@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@model ShoperiaDocumentation.Models.FolderViewModel
+
+<!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +26,10 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white">
-
+    <h1>DATA: @Model.Data</h1>
+    <h1>ROOTNAME: @Model.RootName</h1>
+    <h1>RELATIVEPATH: @Model.RelativePath</h1>
+    <h1>SUBROOTNAME: @Model.SubRootName</h1>
     <header class="custom-bg p-4">
         <nav class="flex justify-between items-center">
             <div>
@@ -32,10 +37,10 @@
                 <span class="text-sm">∘∘</span>
             </div>
             <div class="flex space-x-4" id="mainCategoriesContainer">
-                @await Component.InvokeAsync("CTMainCategories")
+                @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootName })
             </div>
             <div class="flex space-x-4" id="subCategoriesContainer">
-                <!-- Subcategories will be loaded here -->
+                @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootName, selectedSubRootName = @Model.SubRootName })
             </div>
         </nav>
     </header>
@@ -58,9 +63,36 @@
             </div>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+@*     <script>
+        $(document).ready(function () {
+            // Dinamikus tartalom betöltése az URL alapján
+            loadContentFromUrl(window.location.pathname);
 
-    <script>
+            // URL alapján betöltjük a tartalmat
+            function loadContentFromUrl(url) {
+                // Eltávolítjuk a "ClassTree" részt az URL-ből
+                var pathWithoutClassTree = url.replace("/ClassTree", "").trim();
+                $.ajax({
+                    url: '/ClassTree/GetDataByUrl',
+                    type: 'GET',
+                    data: { path: pathWithoutClassTree.substring(1) },
+                    success: function (data) {
+                        console.log(data);
+                        // Megjelenítjük a kapott adatokat
+                        // displayData(data);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error loading data:', error);
+                    }
+                });
+            }
+        });
+    </script> *@
+    @* <script>
         document.addEventListener('DOMContentLoaded', function () {
+            
+            
             const path = "@ViewBag.CurrentPath";
             if (path) {
                 loadSubCategories(path);
@@ -117,6 +149,6 @@
                     document.getElementById('folderContainer').innerHTML = html;
                 });
         }
-    </script>
+    </script> *@
 </body>
 </html>

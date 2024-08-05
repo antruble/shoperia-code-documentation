@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
 
@@ -69,5 +70,48 @@ namespace ShoperiaDocumentation.Services
                 ? await GetRootFoldersAsync()
                 : await GetFoldersAsync(parentFolder.Id);
         }
+        public async Task<int> GetFolderIdByNameAndParentIdAsync(string name, int? parentId)
+        {
+            var folder = await _context.Folders.FirstOrDefaultAsync(f => f.Name == name && f.ParentId == parentId);
+            if (folder == null)
+            {
+                return -1; // Vagy használhatsz Nullable<int> típust és null-t adhatsz vissza
+            }
+            return folder.Id;
+        }
+        public async Task<int?> GetYoungestParentIdAsync(string path)
+        {
+            int? parentId = null;
+            var pathArray = path.Split('/');
+            foreach (var part in pathArray) 
+            { 
+                parentId = await GetFolderIdByNameAndParentIdAsync(part, parentId);
+            }
+            return parentId;
+        }
+        public async Task<FolderViewModel> GetDataFromUrlAsync(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return new FolderViewModel(); //TODO: Return with the roots
+            }
+            var pathArray = path.Split('/');
+            int? parentId = await GetYoungestParentIdAsync(path);
+            var data = await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync();
+            
+            var rootName = pathArray[0];
+            string subRootName = pathArray.Length > 1 ? pathArray[1] : "";
+
+            var result = new FolderViewModel
+            {
+                RootName = rootName,
+                SubRootName = subRootName,
+                RelativePath = "asd0/asd1/asd2",
+                Data = data,
+            };
+
+            return result;
+        }
+
     }
 }
