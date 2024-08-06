@@ -15,22 +15,7 @@ namespace ShoperiaDocumentation.Services
             _context = context;
             _logger = logger;
         }
-
-        public async Task<IEnumerable<FolderModel>> GetRootFoldersAsync()
-        {
-            try
-            {
-                return await _context.Folders
-                    .Where(f => f.ParentId == null)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching root folders");
-                throw;
-            }
-        }
-        public async Task<IEnumerable<FolderModel>> GetFoldersAsync(int parentId)
+        public async Task<IEnumerable<FolderModel>> GetFoldersAsync(int? parentId)
         {
             try
             {
@@ -44,31 +29,32 @@ namespace ShoperiaDocumentation.Services
                 throw;
             }
         }
-        public async Task<IEnumerable<FolderModel>> GetFoldersByPathAsync(string path)
+        public async Task<FolderHierarchyViewModel> GetFolderHierarchyFromPathAsync(string path)
         {
             if (string.IsNullOrEmpty(path))
             {
-                _logger.LogError("Path is null or empty");
-                return Enumerable.Empty<FolderModel>();
+                return new FolderHierarchyViewModel();
             }
-            var pathParts = path.Split('/').Where(p => !string.IsNullOrEmpty(p)).ToArray();
-            FolderModel parentFolder = null;
 
-            foreach (var part in pathParts)
+            var pathSegments = path.Split('/');
+            int? parentId = await GetDeepestParentIdAsync(path);
+
+            var rootFolderName = pathSegments.Length > 0 ? pathSegments[0] : string.Empty;
+            var subFolderName = pathSegments.Length > 1 ? pathSegments[1] : string.Empty;
+            var remainingPath = pathSegments.Length > 2 ? string.Join("/", pathSegments.Skip(2)) : string.Empty;
+            var folders = pathSegments.Length > 1 ? await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync() : null;
+            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).ToListAsync() : null;
+
+            var result = new FolderHierarchyViewModel
             {
-                parentFolder = await _context.Folders
-                    .FirstOrDefaultAsync(f => f.Name == part && (parentFolder == null ? f.ParentId == null : f.ParentId == parentFolder.Id));
+                RootFolderName = rootFolderName,
+                SubFolderName = subFolderName,
+                RemainingPath = remainingPath,
+                Folders = folders,
+                Files = files
+            };
 
-                if (parentFolder == null)
-                {
-                    _logger.LogError("Folder not found for path part {PathPart}", part);
-                    return Enumerable.Empty<FolderModel>();
-                }
-            }
-
-            return parentFolder == null
-                ? await GetRootFoldersAsync()
-                : await GetFoldersAsync(parentFolder.Id);
+            return result;
         }
         public async Task<int> GetFolderIdByNameAndParentIdAsync(string name, int? parentId)
         {
@@ -79,40 +65,36 @@ namespace ShoperiaDocumentation.Services
             }
             return folder.Id;
         }
-        public async Task<int?> GetYoungestParentIdAsync(string path)
+        public async Task<int?> GetDeepestParentIdAsync(string path)
         {
             int? parentId = null;
-            var pathArray = path.Split('/');
-            foreach (var part in pathArray) 
-            { 
-                parentId = await GetFolderIdByNameAndParentIdAsync(part, parentId);
+            var pathSegments = path.Split('/');
+
+            foreach (var segment in pathSegments)
+            {
+                parentId = await GetFolderIdByNameAndParentIdAsync(segment, parentId);
             }
+
             return parentId;
         }
-        public async Task<FolderViewModel> GetDataFromUrlAsync(string path)
+
+        public async Task<FileContentViewModel> GetFileContentAsync(int fileId)
         {
-            if (string.IsNullOrEmpty(path))
+            // Példa implementáció
+            var file = await _context.Files.Include(f => f.Methods).FirstOrDefaultAsync(f => f.Id == fileId);
+            if (file == null)
             {
-                return new FolderViewModel(); //TODO: Return with the roots
+                // Handle file not found
+                return null;
             }
-            var pathArray = path.Split('/');
-            int? parentId = await GetYoungestParentIdAsync(path);
-            var data = await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync();
 
-            var rootName = pathArray.Length > 0 ? pathArray[0] : string.Empty;
-            var subRootName = pathArray.Length > 1 ? pathArray[1] : string.Empty;
-
-            var relativePath = pathArray.Length > 1 ? string.Join("/", pathArray.Skip(2)) : string.Empty;
-
-            var result = new FolderViewModel
+            var fileContent = new FileContentViewModel
             {
-                RootName = rootName,
-                SubRootName = subRootName,
-                RelativePath = relativePath,
-                Data = data,
+                FileName = file.Name,
+                Methods = file.Methods
             };
 
-            return result;
+            return fileContent;
         }
 
     }

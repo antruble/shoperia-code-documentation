@@ -15,9 +15,9 @@ namespace ShoperiaDocumentation.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync(string selectedRootName)
         {
-            var mainCategories = await _fileService.GetRootFoldersAsync();
+            var rootFolders = await _fileService.GetFoldersAsync(null);
             ViewData["SelectedRootName"] = selectedRootName;
-            return View(mainCategories);
+            return View(rootFolders);
         }
     }
 }

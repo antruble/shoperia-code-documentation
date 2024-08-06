@@ -24,9 +24,7 @@ namespace ShoperiaDocumentation.Controllers
         {
             try
             {
-                _logger.LogInformation($"PATH:: {path}");
-                var result = await _fileService.GetDataFromUrlAsync(path);
-                _logger.LogInformation($"RESUTL:: {result}");
+                var result = await _fileService.GetFolderHierarchyFromPathAsync(path);
                 return View(result);
             }
             catch (Exception ex)
@@ -36,55 +34,16 @@ namespace ShoperiaDocumentation.Controllers
             }
         }
         [HttpGet]
-        public async Task<FolderViewModel> GetDataByUrl(string path)
+        public async Task<IActionResult> GetFileContent(int fileId)
         {
-            var result = await _fileService.GetDataFromUrlAsync(path);
-            return result;
-        }
-
-
-
-
-        [HttpGet]
-        public async Task<IActionResult> GetSubCategories(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                _logger.LogError("Path is null or empty");
-                return BadRequest("Path cannot be null or empty");
-            }
-
             try
             {
-                _logger.LogInformation("Fetching subcategories for path: {Path}", path);
-                var subFolders = await _fileService.GetFoldersByPathAsync(path);
-                ViewBag.CurrentPath = path;
-                return Json(subFolders);
+                var fileContent = await _fileService.GetFileContentAsync(fileId);
+                return PartialView("_FileContentModalPartial", fileContent);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching subfolders for path {Path}", path);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetFolders(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                _logger.LogError("Path is null or empty");
-                return BadRequest("Path cannot be null or empty"); // Use BadRequest to return a proper error message
-            }
-
-            try
-            {
-                var folders = await _fileService.GetFoldersByPathAsync(path);
-                return PartialView("_FolderListPartial", folders);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching folders for path {Path}", path);
+                _logger.LogError(ex, "Error fetching file content for fileId {FileId}", fileId);
                 return StatusCode(500, "Internal server error");
             }
         }

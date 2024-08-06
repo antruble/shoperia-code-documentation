@@ -12,6 +12,8 @@ namespace ShoperiaDocumentation.Models
         [StringLength(255)]
         public string Name { get; set; }
 
+        public string Status { get; set; } // "New" or "Modified"
+
         public int? ParentId { get; set; }
 
         [ForeignKey("ParentId")]

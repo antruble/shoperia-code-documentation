@@ -1,30 +1,42 @@
-﻿@model ShoperiaDocumentation.Models.FolderViewModel
+﻿@model ShoperiaDocumentation.Models.FolderHierarchyViewModel
 
 @{
     ViewData["Title"] = "ClassTree";
     Layout = "~/Views/Shared/_ClassTreeLayout.cshtml";
 
-    // Determine the current path, replacing "%2F" with "/" to avoid URL encoding issues
-    var currentPath = Uri.UnescapeDataString(Model.RootName + "/" + Model.SubRootName + "/" + Model.RelativePath);
-    var currentPath2 = Uri.UnescapeDataString(Model.RelativePath);
+    string rootFolderName = !string.IsNullOrEmpty(Model.RootFolderName) ? $"{Model.RootFolderName}/" : string.Empty;
+    string subFolderName = !string.IsNullOrEmpty(Model.SubFolderName) ? $"{Model.SubFolderName}/" : string.Empty;
+    string remainingPath = !string.IsNullOrEmpty(Model.RemainingPath) ? $"{Model.RemainingPath}/" : string.Empty;
+    var currentPath = string.Concat(rootFolderName, subFolderName, remainingPath);
 }
 <h1>@currentPath</h1>
 <div class="flex justify-around py-8">
     <div class="w-1/3">
-        <h2 class="text-xl font-semibold text-center">@Model.RootName</h2>
         <div class="space-y-4 mt-4">
-            @if (Model.Data != null)
+            @if (Model.Folders != null)
             {
-                foreach (var data in Model.Data)
+                foreach (var folder in Model.Folders)
                 {
-                    var isSelectedSub = data.Name == Model.SubRootName;
-                    var newPath = Uri.UnescapeDataString($"{currentPath}/{data.Name}");
-                    <h1>@newPath</h1>
-                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })" class="block p-4 rounded-lg text-center @(isSelectedSub ? "bg-gray-700" : "bg-gray-800") hover:bg-gray-700">
-                        @data.Name
+                    var newPath = string.Concat(currentPath, folder.Name);
+                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")" class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700">
+                        @folder.Name
                     </a>
                 }
             }
+            @if (Model.Files != null)
+            {
+                foreach (var file in Model.Files)
+                {
+                    var newPath = string.Concat(currentPath, file.Name);
+                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")"
+                       class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 file-link"
+                       data-file-id="@file.Id"
+                       data-file-name="@file.Name">
+                        @string.Concat(@file.Name, ".cs")
+                    </a>
+                }
+            }
+
         </div>
     </div>
 </div>

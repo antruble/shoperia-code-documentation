@@ -78,6 +78,11 @@ namespace ShoperiaDocumentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
+                name: "classtree-getfilecontent",
+                pattern: "ClassTree/GetFileContent/{fileId?}",
+                defaults: new { controller = "ClassTree", action = "GetFileContent" });
+
+            app.MapControllerRoute(
                 name: "classtree",
                 pattern: "ClassTree/{*path}",
                 defaults: new { controller = "ClassTree", action = "Index" });

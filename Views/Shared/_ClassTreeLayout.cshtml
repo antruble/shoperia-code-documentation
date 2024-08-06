@@ -1,6 +1,4 @@
-﻿@model ShoperiaDocumentation.Models.FolderViewModel
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
@@ -23,6 +21,14 @@
         .hover-custom-text:hover {
             color: #ffffff; /* Hover állapotban egyedi szövegszín */
         }
+
+        .hidden {
+            display: none;
+        }
+
+        .tab {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -33,10 +39,10 @@
                 <span class="text-sm">∘∘</span>
             </div>
             <div class="flex space-x-4" id="mainCategoriesContainer">
-                @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootName })
+                @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
             </div>
             <div class="flex space-x-4" id="subCategoriesContainer">
-                @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootName, selectedSubRootName = @Model.SubRootName })
+                @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootFolderName, selectedSubRootName = @Model.SubFolderName })
             </div>
         </nav>
     </header>
@@ -46,105 +52,128 @@
     </main>
 
     <!-- Modal Structure -->
-    <div id="modal" class="hidden fixed z-50 inset-0 overflow-y-auto">
+    <div id="modal" class="fixed z-50 inset-0 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen">
             <div class="bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
-                <div class="bg-gray-900 p-4">
-                    <span id="modalTitle" class="text-xl font-bold text-white"></span>
-                    <button type="button" class="float-right text-white" onclick="closeModal()">✕</button>
+                <div class="bg-gray-900 p-4 flex justify-between items-center">
+                    <div id="tabs" class="flex space-x-4">
+                        <!-- Tabs will be inserted here dynamically -->
+                    </div>
+                    <div>
+                        <button type="button" class="text-white" onclick="minimizeModal()">-</button>
+                        <button type="button" class="text-white" onclick="closeModal()">✕</button>
+                    </div>
                 </div>
-                <div class="p-4">
-                    <p id="modalContent" class="text-black"></p>
+                <div id="modalContent" class="p-4">
+                    <!-- Content will be inserted here dynamically -->
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Minimized Modal Button -->
+    <div id="minimizedModalButton" class="hidden fixed bottom-4 right-4">
+        <button class="bg-gray-900 text-white p-2 rounded" onclick="restoreModal()">Open Modal</button>
+    </div>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-@*     <script>
-        $(document).ready(function () {
-            // Dinamikus tartalom betöltése az URL alapján
-            loadContentFromUrl(window.location.pathname);
+    <script>
+        const openFiles = [];
 
-            // URL alapján betöltjük a tartalmat
-            function loadContentFromUrl(url) {
-                // Eltávolítjuk a "ClassTree" részt az URL-ből
-                var pathWithoutClassTree = url.replace("/ClassTree", "").trim();
-                $.ajax({
-                    url: '/ClassTree/GetDataByUrl',
-                    type: 'GET',
-                    data: { path: pathWithoutClassTree.substring(1) },
-                    success: function (data) {
-                        console.log(data);
-                        // Megjelenítjük a kapott adatokat
-                        // displayData(data);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error loading data:', error);
-                    }
-                });
-            }
-        });
-    </script> *@
-    @* <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            
-            
-            const path = "@ViewBag.CurrentPath";
-            if (path) {
-                loadSubCategories(path);
-                loadFolders(path);
-            }
-        });
+        function openModal(fileContent) {
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            const tabs = document.getElementById('tabs');
 
-        function openModal(title, content) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalContent').innerText = content;
-            document.getElementById('modal').classList.remove('hidden');
+            const fileId = fileContent.fileId;
+            const fileName = fileContent.fileName;
+
+            // Check if the file is already open
+            const existingTab = openFiles.find(file => file.id === fileId);
+            if (existingTab) {
+                modal.classList.remove('hidden');
+                selectTab(existingTab.id);
+                return;
+            }
+
+            // Create new tab and content
+            openFiles.push({ id: fileId, name: fileName });
+            const tab = document.createElement('div');
+            tab.className = 'tab p-2 bg-gray-800 text-white rounded';
+            tab.innerText = fileName;
+            tab.onclick = () => selectTab(fileId);
+            tabs.appendChild(tab);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.id = `content-${fileId}`;
+            contentDiv.className = `text-black hidden`;
+            contentDiv.innerHTML = fileContent.html;
+            modalContent.appendChild(contentDiv);
+
+            // Show modal and select new tab
+            modal.classList.remove('hidden');
+            selectTab(fileId);
+        }
+
+        function selectTab(fileId) {
+            // const modal = document.getElementById('modal');
+            // if (modal.classList.contains("hidden") { 
+            //     modal.classList.remove("hidden");
+            // }
+            const modalContent = document.getElementById('modalContent').children;
+            for (let content of modalContent) {
+                content.classList.add('hidden');
+            }
+            document.getElementById(`content-${fileId}`).classList.remove('hidden');
         }
 
         function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
+            openFiles.length = 0;
+            const modal = document.getElementById('modal');
+            modal.classList.add('hidden');
+            document.getElementById('tabs').innerHTML = ''; // Kiüríti a tabokat
+            document.getElementById('modalContent').innerHTML = ''; // Kiüríti a modal tartalmát
         }
 
-        function loadSubCategories(path) {
-            const url = `/ClassTree/GetSubCategories?path=${encodeURIComponent(path)}`;
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => { throw new Error(text) });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const subCategoriesContainer = document.getElementById('subCategoriesContainer');
-                    subCategoriesContainer.innerHTML = '';
-                    data.forEach(folder => {
-                        const subCategoryLink = document.createElement('a');
-                        subCategoryLink.href = `#`;
-                        subCategoryLink.classList.add('custom-text', 'hover-custom-text');
-                        subCategoryLink.innerHTML = `<div class="p-4"><span>${folder.name}</span></div>`;
-                        subCategoryLink.onclick = function (e) {
-                            e.preventDefault();
-                            const newPath = `${path}/${folder.name}`;
-                            console.log(newPath);
-                            window.history.pushState({}, '', newPath);
-                            loadFolders(newPath);
-                        };
-                        subCategoriesContainer.appendChild(subCategoryLink);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading subcategories:', error);
-                });
+        function minimizeModal() {
+            const modal = document.getElementById('modal');
+            const minimizedButton = document.getElementById('minimizedModalButton');
+            modal.classList.add('hidden');
+            minimizedButton.classList.remove('hidden');
         }
 
-        function loadFolders(path) {
-            fetch(`/ClassTree/GetFolders?path=${encodeURIComponent(path)}`)
-                .then(response => response.text())
-                .then(html => {
-                    document.getElementById('folderContainer').innerHTML = html;
-                });
+        function restoreModal() {
+            const modal = document.getElementById('modal');
+            const minimizedButton = document.getElementById('minimizedModalButton');
+            modal.classList.remove('hidden');
+            minimizedButton.classList.add('hidden');
         }
-    </script> *@
+
+        async function fetchFileContent(fileId, fileName) {
+            try {
+                const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.text();
+                openModal({ fileId, fileName, html: data });
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listeners to file links
+            document.querySelectorAll('.file-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const fileId = this.getAttribute('data-file-id');
+                    const fileName = this.getAttribute('data-file-name');
+
+                    fetchFileContent(fileId, fileName);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
