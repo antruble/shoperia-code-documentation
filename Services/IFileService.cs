@@ -12,5 +12,6 @@ namespace ShoperiaDocumentation.Services
         Task<int?> GetDeepestParentIdAsync(string path);
         Task<FileContentViewModel> GetFileContentAsync(int fileId);
         Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user);
+        Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user);
     }
 }

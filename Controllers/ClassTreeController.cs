@@ -71,6 +71,21 @@ namespace ShoperiaDocumentation.Controllers
                 return BadRequest("Failed to delete folder.");
             }
         }
-
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RenameFolder([FromBody] RenameItemRequest request)
+        {
+            _logger.LogInformation($"Lefut és új név: {request.NewName}");
+            var success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Failed to rename folder.");
+            }
+        }
     }
 }

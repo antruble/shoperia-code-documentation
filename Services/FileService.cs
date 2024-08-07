@@ -131,6 +131,38 @@ namespace ShoperiaDocumentation.Services
                 }
             }
         }
+        public async Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user)
+        {
+            // Ellenőrizzük, hogy a felhasználó admin-e
+            if (!user.IsInRole("Admin"))
+            {
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var folder = await _context.Folders.FindAsync(folderId);
+                if (folder == null)
+                {
+                    return false;
+                }
+
+                folder.Name = newFolderName;
+                _context.Folders.Update(folder);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                _logger.LogInformation("Folder with ID {FolderId} renamed to {NewFolderName}.", folderId, newFolderName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while renaming the folder with ID {FolderId}.", folderId);
+                return false;
+            }
+        }
 
     }
 }

@@ -81,11 +81,16 @@ namespace ShoperiaDocumentation
                 name: "classtree-deletefolder",
                 pattern: "ClassTree/GetFileContent/{fileId?}",
                 defaults: new { controller = "ClassTree", action = "GetFileContent" });
+
+            app.MapControllerRoute(
+                name: "classtree-deletefolder",
+                pattern: "ClassTree/GetFileContent/{fileId?}",
+                defaults: new { controller = "ClassTree", action = "GetFileContent" });
             
             app.MapControllerRoute(
-                name: "classtree-getfilecontent",
-                pattern: "ClassTree/DeleteFolder",
-                defaults: new { controller = "ClassTree", action = "DeleteFolder" });
+                name: "classtree-renamefolder",
+                pattern: "ClassTree/RenameFolder",
+                defaults: new { controller = "ClassTree", action = "RenameFolder" });
 
             app.MapControllerRoute(
                 name: "classtree",
