@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
+using ShoperiaDocumentation.Models.Requests;
 using ShoperiaDocumentation.Services;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,11 +15,13 @@ namespace ShoperiaDocumentation.Controllers
     public class ClassTreeController : Controller
     {
         private readonly IFileService _fileService;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<ClassTreeController> _logger;
 
-        public ClassTreeController(IFileService fileService, ILogger<ClassTreeController> logger)
+        public ClassTreeController(IFileService fileService, UserManager<IdentityUser> userManager, ILogger<ClassTreeController> logger)
         {
             _fileService = fileService;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -47,5 +52,25 @@ namespace ShoperiaDocumentation.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteFolder([FromBody] DeleteItemRequest request)
+        {
+            _logger.LogInformation($"{request.ItemId}");
+            var user = await _userManager.GetUserAsync(User);
+            var success = await _fileService.DeleteFolderAsync(request.ItemId, User);
+            if (success)
+            {
+                _logger.LogInformation("Folder with ID {FolderId} deleted by user {UserId}.", request.ItemId, user?.UserName);
+                return Ok();
+            }
+            else
+            {
+                _logger.LogWarning("Failed to delete folder with ID {FolderId} by user {UserId}.", request.ItemId, user?.UserName);
+                return BadRequest("Failed to delete folder.");
+            }
+        }
+
     }
 }

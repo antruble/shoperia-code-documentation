@@ -1,4 +1,9 @@
 ﻿@model ShoperiaDocumentation.Models.FolderHierarchyViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
 
 @{
     ViewData["Title"] = "ClassTree";
@@ -8,8 +13,13 @@
     string subFolderName = !string.IsNullOrEmpty(Model.SubFolderName) ? $"{Model.SubFolderName}/" : string.Empty;
     string remainingPath = !string.IsNullOrEmpty(Model.RemainingPath) ? $"{Model.RemainingPath}/" : string.Empty;
     var currentPath = string.Concat(rootFolderName, subFolderName, remainingPath);
+
+    bool isAdmin = User.IsInRole("Admin");
 }
 <h1>@currentPath</h1>
+
+<input type="hidden" id="antiForgeryToken" name="__RequestVerificationToken" value="@Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken" />
+
 <div class="flex justify-around py-8">
     <div class="w-1/3">
         <div class="space-y-4 mt-4">
@@ -18,9 +28,16 @@
                 foreach (var folder in Model.Folders)
                 {
                     var newPath = string.Concat(currentPath, folder.Name);
-                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")" class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700">
-                        @folder.Name
-                    </a>
+                    <div class="flex items-center">
+                        <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")" class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700">
+                            @folder.Name
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolder(@folder.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolder(@folder.Id)">Edit</button>
+                        }
+                    </div>
                 }
             }
             @if (Model.Files != null)
@@ -28,15 +45,102 @@
                 foreach (var file in Model.Files)
                 {
                     var newPath = string.Concat(currentPath, file.Name);
-                    <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")"
-                       class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 file-link"
-                       data-file-id="@file.Id"
-                       data-file-name="@file.Name">
-                        @string.Concat(@file.Name, ".cs")
-                    </a>
+                    <div class="flex items-center">
+                        <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")"
+                           class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 file-link"
+                           data-file-id="@file.Id"
+                           data-file-name="@file.Name">
+                            @string.Concat(@file.Name, ".cs")
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFile(@file.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFile(@file.Id)">Edit</button>
+                        }
+                    </div>
                 }
+            }
+            @if (isAdmin)
+            {
+                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="addFolder()">Add Folder</button>
+                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="addFile()">Add File</button>
             }
 
         </div>
     </div>
 </div>
+
+<script>
+    async function deleteFolder(folderId) {
+        if (confirm('Are you sure you want to delete this folder?')) {
+            console.log(folderId)
+            try {
+                const token = document.getElementById('antiForgeryToken').value;
+                const response = await fetch('/ClassTree/DeleteFolder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ folderId: folderId })
+                });
+
+                if (response.ok) {
+                    console.log("OK!");
+                    // location.reload();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Failed to delete folder: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting folder:', error);
+                alert('An error occurred while trying to delete the folder.');
+            }
+        }
+    }
+
+    function editFolder(folderId) {
+        console.log(`editFolder(${folderId})`);
+        // Implement edit functionality
+        // e.g., open a modal with folder details for editing
+    }
+
+    function addFolder() {
+        console.log(`addFolder()`);
+        // Implement add folder functionality
+        // e.g., open a modal with form to add a new folder
+    }
+
+    function deleteFile(fileId) {
+        if (confirm('Are you sure you want to delete this file?')) {
+            console.log(`deleteFile(${fileId})`);
+            // // Implement delete functionality using AJAX
+            // fetch(`/ClassTree/DeleteFile`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'RequestVerificationToken': 
+            //     },
+            //     body: JSON.stringify({ fileId: fileId })
+            // }).then(response => {
+            //     if (response.ok) {
+            //         location.reload();
+            //     } else {
+            //         alert('Failed to delete file.');
+            //     }
+            // });
+        }
+    }
+
+    function editFile(fileId) {
+        console.log(`editFile(${fileId})`);
+        // Implement edit functionality
+        // e.g., open a modal with file details for editing
+    }
+
+    function addFile() {
+        console.log(`addFile()`);
+        // Implement add file functionality
+        // e.g., open a modal with form to add a new file
+    }
+</script>

@@ -30,7 +30,7 @@ namespace ShoperiaDocumentation
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
@@ -78,9 +78,14 @@ namespace ShoperiaDocumentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "classtree-getfilecontent",
+                name: "classtree-deletefolder",
                 pattern: "ClassTree/GetFileContent/{fileId?}",
                 defaults: new { controller = "ClassTree", action = "GetFileContent" });
+            
+            app.MapControllerRoute(
+                name: "classtree-getfilecontent",
+                pattern: "ClassTree/DeleteFolder",
+                defaults: new { controller = "ClassTree", action = "DeleteFolder" });
 
             app.MapControllerRoute(
                 name: "classtree",

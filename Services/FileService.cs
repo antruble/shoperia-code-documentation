@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
+using System.Security.Claims;
 
 namespace ShoperiaDocumentation.Services
 {
@@ -77,7 +78,6 @@ namespace ShoperiaDocumentation.Services
 
             return parentId;
         }
-
         public async Task<FileContentViewModel> GetFileContentAsync(int fileId)
         {
             // Példa implementáció
@@ -95,6 +95,41 @@ namespace ShoperiaDocumentation.Services
             };
 
             return fileContent;
+        }
+        public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to delete folder {FolderId} without admin permissions.", user.Identity.Name, folderId);
+                return false;
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var folder = await _context.Folders.FindAsync(folderId);
+                    if (folder == null)
+                    {
+                        _logger.LogWarning("Folder with ID {FolderId} not found for deletion by user {UserName}.", folderId, user.Identity.Name);
+                        return false;
+                    }
+
+                    _context.Folders.Remove(folder);
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    _logger.LogInformation("Folder with ID {FolderId} successfully deleted by user {UserName}.", folderId, user.Identity.Name);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error occurred while deleting folder with ID {FolderId} by user {UserName}.", folderId, user.Identity.Name);
+                    return false;
+                }
+            }
         }
 
     }

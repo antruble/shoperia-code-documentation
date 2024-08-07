@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShoperiaDocumentation.Models;
+using System.Security.Claims;
 
 namespace ShoperiaDocumentation.Services
 {
@@ -10,5 +11,6 @@ namespace ShoperiaDocumentation.Services
         Task<FolderHierarchyViewModel> GetFolderHierarchyFromPathAsync(string path);
         Task<int?> GetDeepestParentIdAsync(string path);
         Task<FileContentViewModel> GetFileContentAsync(int fileId);
+        Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user);
     }
 }
