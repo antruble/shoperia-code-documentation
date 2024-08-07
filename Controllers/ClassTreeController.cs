@@ -55,7 +55,7 @@ namespace ShoperiaDocumentation.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteFolder([FromBody] DeleteItemRequest request)
+        public async Task<IActionResult> DeleteFolderOrFile([FromBody] DeleteItemRequest request)
         {
             _logger.LogInformation($"{request.ItemId}");
             var user = await _userManager.GetUserAsync(User);
@@ -74,10 +74,14 @@ namespace ShoperiaDocumentation.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> RenameFolder([FromBody] RenameItemRequest request)
+        public async Task<IActionResult> RenameFolderOrFile([FromBody] RenameItemRequest request)
         {
-            _logger.LogInformation($"Lefut és új név: {request.NewName}");
-            var success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);
+            _logger.LogInformation($"lefutottttt");
+            bool success = false;
+            if (request.Type == "folder")
+                success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);
+            else if(request.Type == "file")
+                success = await _fileService.RenameFileAsync(request.ItemId, request.NewName, User);
             if (success)
             {
                 return Ok();

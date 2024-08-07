@@ -29,7 +29,7 @@
                 {
                     var newPath = string.Concat(currentPath, folder.Name);
                     <div class="flex items-center folder-item" data-folder-id="@folder.Id">
-                        <div class="folder-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" onclick="navigateToFolder('@newPath')">
+                        <div class="folder-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" onclick="navigateToPath('@newPath')">
                             @folder.Name
                         </div>
                         @if (isAdmin)
@@ -38,8 +38,8 @@
                             <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
                             <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
                         
-                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolder(@folder.Id)">Delete</button>
-                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolder(@folder.Id)">Edit</button>
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('folder', @folder.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('folder', @folder.Id)">Edit</button>
                         }
                     </div>
                 }
@@ -49,7 +49,21 @@
                 foreach (var file in Model.Files)
                 {
                     var newPath = string.Concat(currentPath, file.Name);
-                    <div class="flex items-center">
+                    <div class="flex items-center file-item" data-file-id="@file.Id" data-file-name="@file.Name">
+                        <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name">
+                            @string.Concat(@file.Name, ".cs")
+                        </div>
+                        @if (isAdmin)
+                        {
+                            <input type="text" class="hidden file-name-input text-black" value="@file.Name" />
+                            <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
+                            <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
+
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('file', @file.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('file', @file.Id)">Edit</button>
+                        }
+                    </div>
+@*                     <div class="flex items-center">
                         <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")"
                            class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 file-link"
                            data-file-id="@file.Id"
@@ -62,7 +76,7 @@
                             <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFile(@file.Id)">Delete</button>
                             <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFile(@file.Id)">Edit</button>
                         }
-                    </div>
+                    </div> *@
                 }
             }
             @if (isAdmin)
@@ -75,136 +89,9 @@
     </div>
 </div>
 
+<script src="~/js/fileHandling.js"></script>
 <script>
-    function navigateToFolder(path) {
+    function navigateToPath(path) {
         window.location.href = `/ClassTree/${path}`;
-    }
-    async function deleteFolder(folderId) {
-        if (confirm('Are you sure you want to delete this folder?')) {
-            console.log(folderId)
-            try {
-                const token = document.getElementById('antiForgeryToken').value;
-                const response = await fetch('/ClassTree/DeleteFolder', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
-                    body: JSON.stringify({ folderId: folderId })
-                });
-
-                if (response.ok) {
-                    console.log("OK!");
-                    // location.reload();
-                } else {
-                    const errorText = await response.text();
-                    alert(`Failed to delete folder: ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Error deleting folder:', error);
-                alert('An error occurred while trying to delete the folder.');
-            }
-        }
-    }
-
-    function editFolder(folderId) {
-        const folderItem = document.querySelector(`.folder-item[data-folder-id='${folderId}']`);
-        const folderNameDiv = folderItem.querySelector('.folder-name');
-        const folderNameInput = folderItem.querySelector('.folder-name-input');
-        const saveButton = folderItem.querySelector('.save-btn');
-        const cancelButton = folderItem.querySelector('.cancel-btn');
-
-        folderNameDiv.classList.add('hidden');
-        folderNameInput.classList.remove('hidden');
-        saveButton.classList.remove('hidden');
-        cancelButton.classList.remove('hidden');
-
-        saveButton.onclick = (event) => {
-            event.stopPropagation();
-            saveFolderName(folderId, folderNameInput.value.trim());
-        };
-        cancelButton.onclick = (event) => {
-            event.stopPropagation();
-            cancelEdit(folderId, folderNameDiv.innerText.trim());
-        };
-    }
-
-    function cancelEdit(folderId, folderName) {
-        const folderItem = document.querySelector(`.folder-item[data-folder-id='${folderId}']`);
-        const folderNameDiv = folderItem.querySelector('.folder-name');
-        const folderNameInput = folderItem.querySelector('.folder-name-input');
-        const saveButton = folderItem.querySelector('.save-btn');
-        const cancelButton = folderItem.querySelector('.cancel-btn');
-
-        folderNameDiv.classList.remove('hidden');
-        folderNameInput.classList.add('hidden');
-        saveButton.classList.add('hidden');
-        cancelButton.classList.add('hidden');
-        folderNameInput.value = folderName;
-    }
-
-    async function saveFolderName(folderId, newFolderName) {
-        try {
-            console.log(folderId)
-            console.log(newFolderName)
-            const token = document.getElementById('antiForgeryToken').value;
-            const response = await fetch('/ClassTree/RenameFolder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
-                },
-                body: JSON.stringify({ itemId: folderId, newName: newFolderName })
-            });
-
-            if (response.ok) {
-                location.reload();
-            } else {
-                const errorText = await response.text();
-                alert(`Failed to rename folder: ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error renaming folder:', error);
-            alert('An error occurred while trying to rename the folder.');
-        }
-    }
-
-    function addFolder() {
-        console.log(`addFolder()`);
-        // Implement add folder functionality
-        // e.g., open a modal with form to add a new folder
-    }
-
-    function deleteFile(fileId) {
-        if (confirm('Are you sure you want to delete this file?')) {
-            console.log(`deleteFile(${fileId})`);
-            // // Implement delete functionality using AJAX
-            // fetch(`/ClassTree/DeleteFile`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'RequestVerificationToken': 
-            //     },
-            //     body: JSON.stringify({ fileId: fileId })
-            // }).then(response => {
-            //     if (response.ok) {
-            //         location.reload();
-            //     } else {
-            //         alert('Failed to delete file.');
-            //     }
-            // });
-        }
-    }
-
-    function editFile(fileId) {
-        console.log(`editFile(${fileId})`);
-        // Implement edit functionality
-        // e.g., open a modal with file details for editing
-    }
-
-    function addFile() {
-        console.log(`addFile()`);
-        // Implement add file functionality
-        // e.g., open a modal with form to add a new file
     }
 </script>

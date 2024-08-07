@@ -187,7 +187,7 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             // Add event listeners to file links
-            document.querySelectorAll('.file-link').forEach(link => {
+            document.querySelectorAll('.file-name').forEach(link => {
                 link.addEventListener('click', function (e) {
                     e.preventDefault();
                     const fileId = this.getAttribute('data-file-id');

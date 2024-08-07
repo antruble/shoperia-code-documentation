@@ -11,7 +11,13 @@ namespace ShoperiaDocumentation.Services
         Task<FolderHierarchyViewModel> GetFolderHierarchyFromPathAsync(string path);
         Task<int?> GetDeepestParentIdAsync(string path);
         Task<FileContentViewModel> GetFileContentAsync(int fileId);
+        #region FOLDER CREATE/RENAME/DELETE
         Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user);
+        #endregion
+        #region FILE CREATE/RENAME/DELETE
+        Task<bool> DeleteFileAsync(int folderId, ClaimsPrincipal user);
+        Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
+        #endregion
     }
 }
