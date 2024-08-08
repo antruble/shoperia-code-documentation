@@ -80,10 +80,28 @@ async function saveName(type, folderId, newFolderName) {
     }
 }
 
-function addFolder() {
-    console.log(`addFolder()`);
-    // Implement add folder functionality
-    // e.g., open a modal with form to add a new folder
+function addFolderOrFile(type, name) {
+    try {
+        const token = document.getElementById('antiForgeryToken').value;
+        const response = await fetch('/ClassTree/CreateFolderOrFile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({ type: type, name: name })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const errorText = await response.text();
+            alert(`Failed to rename ${type}: ${errorText}`);
+        }
+    } catch (error) {
+        console.error(`Error renaming ${type}:`, error);
+        alert(`An error occurred while trying to rename the ${type}.`);
+    }
 }
 
 function deleteFile(fileId) {

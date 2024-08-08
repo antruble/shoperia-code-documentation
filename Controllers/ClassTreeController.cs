@@ -76,7 +76,25 @@ namespace ShoperiaDocumentation.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RenameFolderOrFile([FromBody] RenameItemRequest request)
         {
-            _logger.LogInformation($"lefutottttt");
+            bool success = false;
+            if (request.Type == "folder")
+                success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);
+            else if(request.Type == "file")
+                success = await _fileService.RenameFileAsync(request.ItemId, request.NewName, User);
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Failed to rename folder.");
+            }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateFolderOrFile([FromBody] RenameItemRequest request)
+        {
             bool success = false;
             if (request.Type == "folder")
                 success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);

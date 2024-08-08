@@ -98,6 +98,20 @@ namespace ShoperiaDocumentation.Services
         }
 
         #region FOLDER CREATE/RENAME/DELETE
+        public async Task<bool> CreateFolderAsync(string folderName, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create folder {FolderId} without admin permissions.", user.Identity?.Name, folderName);
+                return false;
+            }
+            if (string.IsNullOrEmpty(folderName) || string.IsNullOrWhiteSpace(folderName))
+            {
+                _logger.LogWarning("Invalid folder name {FolderName} provided for creation by user {UserName}.", folderName, user.Identity?.Name);
+                return false;
+            }
+            bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == f.ParentId && f.Name == folderName);
+        }
         public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
