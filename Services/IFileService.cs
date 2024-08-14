@@ -12,7 +12,7 @@ namespace ShoperiaDocumentation.Services
         Task<int?> GetDeepestParentIdAsync(string path);
         Task<FileContentViewModel> GetFileContentAsync(int fileId);
         #region FOLDER CREATE/RENAME/DELETE
-        Task<bool> CreateFolderAsync(string name, ClaimsPrincipal user);
+        Task<bool> CreateFolderAsync(string name, int parentId, ClaimsPrincipal user);
         Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion

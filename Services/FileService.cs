@@ -98,20 +98,60 @@ namespace ShoperiaDocumentation.Services
         }
 
         #region FOLDER CREATE/RENAME/DELETE
-        public async Task<bool> CreateFolderAsync(string folderName, ClaimsPrincipal user)
+        public async Task<bool> CreateFolderAsync(string folderName, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
                 _logger.LogWarning("User {UserName} attempted to create folder {FolderId} without admin permissions.", user.Identity?.Name, folderName);
                 return false;
             }
+
             if (string.IsNullOrEmpty(folderName) || string.IsNullOrWhiteSpace(folderName))
             {
                 _logger.LogWarning("Invalid folder name {FolderName} provided for creation by user {UserName}.", folderName, user.Identity?.Name);
                 return false;
             }
-            bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == f.ParentId && f.Name == folderName);
+
+            bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == parentId && f.Name == folderName);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newFolder = new FolderModel
+                {
+                    Name = folderName,
+                    ParentId = parentId
+                };
+
+                _context.Folders.Add(newFolder);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Folder {FolderName} successfully created by user {UserName}.", folderName, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
+                return false;
+            }
         }
+
         public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
