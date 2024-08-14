@@ -259,6 +259,60 @@ namespace ShoperiaDocumentation.Services
 
         #endregion
         #region FILE CREATE/RENAME/DELETE
+        public async Task<bool> CreateFileAsync(string name, int parentId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create file {FileName} without admin permissions.", user.Identity?.Name, name);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name))
+            {
+                _logger.LogWarning("Invalid file name {FileName} provided for creation by user {UserName}.", name, user.Identity?.Name);
+                return false;
+            }
+
+            bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newFile = new FileModel
+                {
+                    Name = name,
+                    ParentId = parentId
+                };
+
+                _context.Files.Add(newFile);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("File {FileName} successfully created by user {UserName}.", name, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create file {FileName} by user {UserName}.", name, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", name, user.Identity?.Name);
+                return false;
+            }
+        }
+
         public async Task<bool> DeleteFileAsync(int fileId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))

@@ -17,7 +17,7 @@ namespace ShoperiaDocumentation.Services
         Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        Task<bool> CreateFileAsync(string name, ClaimsPrincipal user);
+        Task<bool> CreateFileAsync(string name, int parentId, ClaimsPrincipal user);
         Task<bool> DeleteFileAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion
