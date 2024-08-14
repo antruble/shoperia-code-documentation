@@ -14,8 +14,12 @@ namespace ShoperiaDocumentation.Models
 
         public int? ParentId { get; set; }
 
+        public string Status { get; set; } // "New" or "Modified"
+
         [ForeignKey("ParentId")]
         public FolderModel ParentFolder { get; set; }
+
+        public IEnumerable<MethodModel> Methods { get; set; }
 
     }
 }

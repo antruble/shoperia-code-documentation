@@ -12,13 +12,12 @@ namespace ShoperiaDocumentation.Models
         [StringLength(255)]
         public string Name { get; set; }
 
+        public string Status { get; set; } // "New" or "Modified"
+
         public int? ParentId { get; set; }
 
         [ForeignKey("ParentId")]
         public FolderModel ParentFolder { get; set; }
 
-        public int Level { get; set; }
-
-        public ICollection<FolderModel> SubFolders { get; set; } = new List<FolderModel>();
     }
 }

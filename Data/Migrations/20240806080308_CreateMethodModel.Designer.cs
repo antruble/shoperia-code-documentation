@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShoperiaDocumentation.Data;
 
@@ -11,9 +12,11 @@ using ShoperiaDocumentation.Data;
 namespace ShoperiaDocumentation.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240806080308_CreateMethodModel")]
+    partial class CreateMethodModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,28 +227,6 @@ namespace ShoperiaDocumentation.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ShoperiaDocumentation.Models.DescriptionModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MethodId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MethodId");
-
-                    b.ToTable("Descriptions");
-                });
-
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
                     b.Property<int>("Id")
@@ -261,10 +242,6 @@ namespace ShoperiaDocumentation.Data.Migrations
 
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -289,10 +266,6 @@ namespace ShoperiaDocumentation.Data.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ParentId");
@@ -307,6 +280,10 @@ namespace ShoperiaDocumentation.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("FileModelId")
                         .HasColumnType("int");
@@ -381,17 +358,6 @@ namespace ShoperiaDocumentation.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShoperiaDocumentation.Models.DescriptionModel", b =>
-                {
-                    b.HasOne("ShoperiaDocumentation.Models.MethodModel", "Method")
-                        .WithMany("Descriptions")
-                        .HasForeignKey("MethodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Method");
-                });
-
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
                     b.HasOne("ShoperiaDocumentation.Models.FolderModel", "ParentFolder")
@@ -420,11 +386,6 @@ namespace ShoperiaDocumentation.Data.Migrations
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
                     b.Navigation("Methods");
-                });
-
-            modelBuilder.Entity("ShoperiaDocumentation.Models.MethodModel", b =>
-                {
-                    b.Navigation("Descriptions");
                 });
 #pragma warning restore 612, 618
         }

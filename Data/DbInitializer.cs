@@ -75,9 +75,9 @@ namespace ShoperiaDocumentation.Data
                 // Seed folders
                 var rootFolders = new FolderModel[]
                 {
-                    new FolderModel { Name = "Libraries", ParentId = null, Level = 1 },
-                    new FolderModel { Name = "Presentation", ParentId = null, Level = 1 },
-                    new FolderModel { Name = "Plugins", ParentId = null, Level = 1 }
+                    new FolderModel { Name = "Libraries", ParentId = null},
+                    new FolderModel { Name = "Presentation", ParentId = null },
+                    new FolderModel { Name = "Plugins", ParentId = null }
                 };
 
                 context.Folders.AddRange(rootFolders);
@@ -95,13 +95,13 @@ namespace ShoperiaDocumentation.Data
                 var subFolders = new FolderModel[]
                 {
                     // LIBRARIES
-                    new FolderModel { Name = "Nop.Data", ParentId = rootFolders[0].Id, Level = 2 },
-                    new FolderModel { Name = "Nop.Services", ParentId = rootFolders[0].Id, Level = 2 },
-                    new FolderModel { Name = "Nop.Core", ParentId = rootFolders[0].Id, Level = 2 },
+                    new FolderModel { Name = "Nop.Data", ParentId = rootFolders[0].Id},
+                    new FolderModel { Name = "Nop.Services", ParentId = rootFolders[0].Id },
+                    new FolderModel { Name = "Nop.Core", ParentId = rootFolders[0].Id },
 
                     //PRESENTATION
-                    new FolderModel { Name = "Nop.Web", ParentId = rootFolders[1].Id, Level = 2 },
-                    new FolderModel { Name = "Nop.Web.Framework", ParentId = rootFolders[1].Id, Level = 2 }
+                    new FolderModel { Name = "Nop.Web", ParentId = rootFolders[1].Id },
+                    new FolderModel { Name = "Nop.Web.Framework", ParentId = rootFolders[1].Id }
                 };
 
                 context.Folders.AddRange(subFolders);
@@ -119,23 +119,23 @@ namespace ShoperiaDocumentation.Data
                 // Add more nested folders as needed
                 var nestedFolders = new FolderModel[]
                 {
-                    new FolderModel { Name = "Folder1", ParentId = subFolders[0].Id, Level = 3 },
-                    new FolderModel { Name = "Folder2", ParentId = subFolders[0].Id, Level = 3 },
-                    new FolderModel { Name = "Folder3", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder4", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder5", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder6", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder7", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder8", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder9", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder10", ParentId = subFolders[1].Id, Level = 3 },
-                    new FolderModel { Name = "Folder11", ParentId = subFolders[2].Id, Level = 3 },
-                    new FolderModel { Name = "Folder12", ParentId = subFolders[2].Id, Level = 3 },
-                    new FolderModel { Name = "Folder13", ParentId = subFolders[3].Id, Level = 3 },
-                    new FolderModel { Name = "Folder14", ParentId = subFolders[3].Id, Level = 3 },
-                    new FolderModel { Name = "Folder15", ParentId = subFolders[4].Id, Level = 3 },
-                    new FolderModel { Name = "Folder16", ParentId = subFolders[4].Id, Level = 3 },
-                    new FolderModel { Name = "Folder17", ParentId = subFolders[4].Id, Level = 3 },
+                    new FolderModel { Name = "Folder1", ParentId = subFolders[0].Id },
+                    new FolderModel { Name = "Folder2", ParentId = subFolders[0].Id },
+                    new FolderModel { Name = "Folder3", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder4", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder5", ParentId = subFolders[1].Id  },
+                    new FolderModel { Name = "Folder6", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder7", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder8", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder9", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder10", ParentId = subFolders[1].Id },
+                    new FolderModel { Name = "Folder11", ParentId = subFolders[2].Id },
+                    new FolderModel { Name = "Folder12", ParentId = subFolders[2].Id },
+                    new FolderModel { Name = "Folder13", ParentId = subFolders[3].Id },
+                    new FolderModel { Name = "Folder14", ParentId = subFolders[3].Id },
+                    new FolderModel { Name = "Folder15", ParentId = subFolders[4].Id },
+                    new FolderModel { Name = "Folder16", ParentId = subFolders[4].Id },
+                    new FolderModel { Name = "Folder17", ParentId = subFolders[4].Id },
                 };
 
                 context.Folders.AddRange(nestedFolders);

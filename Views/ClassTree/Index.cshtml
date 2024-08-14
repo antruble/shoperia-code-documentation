@@ -1,6 +1,97 @@
-﻿@model IEnumerable<ShoperiaDocumentation.Models.FolderModel>
+﻿@model ShoperiaDocumentation.Models.FolderHierarchyViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
 
 @{
     ViewData["Title"] = "ClassTree";
     Layout = "~/Views/Shared/_ClassTreeLayout.cshtml";
+
+    string rootFolderName = !string.IsNullOrEmpty(Model.RootFolderName) ? $"{Model.RootFolderName}/" : string.Empty;
+    string subFolderName = !string.IsNullOrEmpty(Model.SubFolderName) ? $"{Model.SubFolderName}/" : string.Empty;
+    string remainingPath = !string.IsNullOrEmpty(Model.RemainingPath) ? $"{Model.RemainingPath}/" : string.Empty;
+    var currentPath = string.Concat(rootFolderName, subFolderName, remainingPath);
+
+    bool isAdmin = User.IsInRole("Admin");
 }
+<h1>@currentPath</h1>
+
+<input type="hidden" id="antiForgeryToken" name="__RequestVerificationToken" value="@Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken" />
+
+<div class="flex justify-around py-8">
+    <div class="w-1/3">
+        <div class="space-y-4 mt-4">
+            @if (Model.Folders != null)
+            {
+                foreach (var folder in Model.Folders)
+                {
+                    var newPath = string.Concat(currentPath, folder.Name);
+                    <div class="flex items-center folder-item" data-folder-id="@folder.Id">
+                        <div class="folder-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" onclick="navigateToPath('@newPath')">
+                            @folder.Name
+                        </div>
+                        @if (isAdmin)
+                        {
+                            <input type="text" class="hidden folder-name-input text-black" value="@folder.Name" />
+                            <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
+                            <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
+                        
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('folder', @folder.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('folder', @folder.Id)">Edit</button>
+                        }
+                    </div>
+                }
+            }
+            @if (Model.Files != null)
+            {
+                foreach (var file in Model.Files)
+                {
+                    var newPath = string.Concat(currentPath, file.Name);
+                    <div class="flex items-center file-item" data-file-id="@file.Id" data-file-name="@file.Name">
+                        <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name">
+                            @string.Concat(@file.Name, ".cs")
+                        </div>
+                        @if (isAdmin)
+                        {
+                            <input type="text" class="hidden file-name-input text-black" value="@file.Name" />
+                            <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
+                            <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
+
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('file', @file.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('file', @file.Id)">Edit</button>
+                        }
+                    </div>
+@*                     <div class="flex items-center">
+                        <a href="@Url.Action("Index", "ClassTree", new { path = newPath })?.Replace("%2F", "/")"
+                           class="block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 file-link"
+                           data-file-id="@file.Id"
+                           data-file-name="@file.Name">
+                            <span class="file-name">@string.Concat(@file.Name, ".cs")
+                            </span>
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFile(@file.Id)">Delete</button>
+                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFile(@file.Id)">Edit</button>
+                        }
+                    </div> *@
+                }
+            }
+            @if (isAdmin)
+            {
+                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="addFolder()">Add Folder</button>
+                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="addFile()">Add File</button>
+            }
+
+        </div>
+    </div>
+</div>
+
+<script src="~/js/fileHandling.js"></script>
+<script>
+    function navigateToPath(path) {
+        window.location.href = `/ClassTree/${path}`;
+    }
+</script>

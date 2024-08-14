@@ -30,7 +30,7 @@ namespace ShoperiaDocumentation
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
@@ -78,8 +78,38 @@ namespace ShoperiaDocumentation
             app.UseAuthorization();
 
             app.MapControllerRoute(
+                name: "classtree-getfilecontent",
+                pattern: "ClassTree/GetFileContent/{fileId?}",
+                defaults: new { controller = "ClassTree", action = "GetFileContent" });
+
+            app.MapControllerRoute(
+                name: "classtree-deletefolderorfile",
+                pattern: "ClassTree/DeleteFolderOrFile",
+                defaults: new { controller = "ClassTree", action = "DeleteFolderOrFile" });
+            
+            app.MapControllerRoute(
+                name: "classtree-createfolderorfile",
+                pattern: "ClassTree/CreateFolderOrFile",
+                defaults: new { controller = "ClassTree", action = "CreateFolderOrFile" });
+            
+            app.MapControllerRoute(
+                name: "classtree-renamefolderorfile",
+                pattern: "ClassTree/RenameFolderOrFile",
+                defaults: new { controller = "ClassTree", action = "RenameFolderOrFile" });
+
+            app.MapControllerRoute(
+                name: "classtree",
+                pattern: "ClassTree/{*path}",
+                defaults: new { controller = "ClassTree", action = "Index" });
+
+            app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=ClassTree}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+            //        app.MapControllerRoute(
+            //name: "default",
+            //pattern: "{controller=ClassTree}/{action=Index}/{path?}");
+
+
 
             app.MapRazorPages();
 
