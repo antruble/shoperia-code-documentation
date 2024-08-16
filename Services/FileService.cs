@@ -48,6 +48,7 @@ namespace ShoperiaDocumentation.Services
 
             var result = new FolderHierarchyViewModel
             {
+                CurrentFolderId = parentId,
                 RootFolderName = rootFolderName,
                 SubFolderName = subFolderName,
                 RemainingPath = remainingPath,
@@ -98,7 +99,7 @@ namespace ShoperiaDocumentation.Services
         }
 
         #region FOLDER CREATE/RENAME/DELETE
-        public async Task<bool> CreateFolderAsync(string folderName, int parentId, ClaimsPrincipal user)
+        public async Task<bool> CreateFolderAsync(string folderName, string status, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
@@ -125,7 +126,8 @@ namespace ShoperiaDocumentation.Services
                 var newFolder = new FolderModel
                 {
                     Name = folderName,
-                    ParentId = parentId
+                    ParentId = parentId,
+                    Status = status,
                 };
 
                 _context.Folders.Add(newFolder);
@@ -151,7 +153,6 @@ namespace ShoperiaDocumentation.Services
                 return false;
             }
         }
-
         public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
@@ -201,7 +202,6 @@ namespace ShoperiaDocumentation.Services
                 }
             }
         }
-
         public async Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
@@ -259,7 +259,7 @@ namespace ShoperiaDocumentation.Services
 
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        public async Task<bool> CreateFileAsync(string name, int parentId, ClaimsPrincipal user)
+        public async Task<bool> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
@@ -286,7 +286,8 @@ namespace ShoperiaDocumentation.Services
                 var newFile = new FileModel
                 {
                     Name = name,
-                    ParentId = parentId
+                    ParentId = parentId,
+                    Status = status,
                 };
 
                 _context.Files.Add(newFile);
@@ -312,7 +313,6 @@ namespace ShoperiaDocumentation.Services
                 return false;
             }
         }
-
         public async Task<bool> DeleteFileAsync(int fileId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
