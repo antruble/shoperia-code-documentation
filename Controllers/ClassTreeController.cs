@@ -93,13 +93,13 @@ namespace ShoperiaDocumentation.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateFolderOrFile([FromBody] RenameItemRequest request)
+        public async Task<IActionResult> CreateFolderOrFile([FromBody] CreateItemRequest request)
         {
             bool success = false;
             if (request.Type == "folder")
-                success = await _fileService.RenameFolderAsync(request.ItemId, request.NewName, User);
+                success = await _fileService.CreateFolderAsync(request.Name, request.Status, request.ParentId, User);
             else if(request.Type == "file")
-                success = await _fileService.RenameFileAsync(request.ItemId, request.NewName, User);
+                success = await _fileService.CreateFileAsync(request.Name, request.Status, request.ParentId, User);
             if (success)
             {
                 return Ok();

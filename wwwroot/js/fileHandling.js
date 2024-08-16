@@ -79,63 +79,6 @@ async function saveName(type, folderId, newFolderName) {
         alert(`An error occurred while trying to rename the ${type}.`);
     }
 }
-
-function addFolderOrFile(type, name) {
-    try {
-        const token = document.getElementById('antiForgeryToken').value;
-        const response = await fetch('/ClassTree/CreateFolderOrFile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': token
-            },
-            body: JSON.stringify({ type: type, name: name })
-        });
-
-        if (response.ok) {
-            location.reload();
-        } else {
-            const errorText = await response.text();
-            alert(`Failed to rename ${type}: ${errorText}`);
-        }
-    } catch (error) {
-        console.error(`Error renaming ${type}:`, error);
-        alert(`An error occurred while trying to rename the ${type}.`);
-    }
-}
-
-function deleteFile(fileId) {
-    if (confirm('Are you sure you want to delete this file?')) {
-        console.log(`deleteFile(${fileId})`);
-        // // Implement delete functionality using AJAX
-        // fetch(`/ClassTree/DeleteFile`, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'RequestVerificationToken': 
-        //     },
-        //     body: JSON.stringify({ fileId: fileId })
-        // }).then(response => {
-        //     if (response.ok) {
-        //         location.reload();
-        //     } else {
-        //         alert('Failed to delete file.');
-        //     }
-        // });
-    }
-}
-
-function editFile(fileId) {
-    console.log(`editFile(${fileId})`);
-    // Implement edit functionality
-    // e.g., open a modal with file details for editing
-}
-
-function addFile() {
-    console.log(`addFile()`);
-    // Implement add file functionality
-    // e.g., open a modal with form to add a new file
-}
 async function deleteFolder(folderId) {
     if (confirm('Are you sure you want to delete this folder?')) {
         console.log(folderId)
@@ -151,8 +94,7 @@ async function deleteFolder(folderId) {
             });
 
             if (response.ok) {
-                console.log("OK!");
-                // location.reload();
+                 location.reload();
             } else {
                 const errorText = await response.text();
                 alert(`Failed to delete folder: ${errorText}`);
@@ -183,4 +125,30 @@ function editFolder(folderId) {
         event.stopPropagation();
         // cancelEdit(folderId, folderNameDiv.innerText.trim());
     };
+}
+async function createFolderOrFile(type) {
+    try {
+        const token = document.getElementById('antiForgeryToken').value;
+        const name = type === 'folder' ? document.getElementById('newFolderName').value : document.getElementById('newFileName').value;
+        const status = type === 'folder' ? document.getElementById('newFolderStatus').value : document.getElementById('newFileStatus').value;
+        const parentId = document.getElementById('parentId').value;
+        const response = await fetch('/ClassTree/CreateFolderOrFile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({ type: type, name: name, status: status, parentId: parentId })
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const errorText = await response.text();
+            alert(`Failed to create ${type}: ${errorText}`);
+        }
+    } catch (error) {
+        console.error(`Error creating ${type}:`, error);
+        alert(`An error occurred while trying to create the ${type}.`);
+    }
 }

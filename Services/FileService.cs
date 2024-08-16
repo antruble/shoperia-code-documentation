@@ -48,6 +48,7 @@ namespace ShoperiaDocumentation.Services
 
             var result = new FolderHierarchyViewModel
             {
+                CurrentFolderId = parentId,
                 RootFolderName = rootFolderName,
                 SubFolderName = subFolderName,
                 RemainingPath = remainingPath,
@@ -98,19 +99,59 @@ namespace ShoperiaDocumentation.Services
         }
 
         #region FOLDER CREATE/RENAME/DELETE
-        public async Task<bool> CreateFolderAsync(string folderName, ClaimsPrincipal user)
+        public async Task<bool> CreateFolderAsync(string folderName, string status, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
                 _logger.LogWarning("User {UserName} attempted to create folder {FolderId} without admin permissions.", user.Identity?.Name, folderName);
                 return false;
             }
+
             if (string.IsNullOrEmpty(folderName) || string.IsNullOrWhiteSpace(folderName))
             {
                 _logger.LogWarning("Invalid folder name {FolderName} provided for creation by user {UserName}.", folderName, user.Identity?.Name);
                 return false;
             }
-            bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == f.ParentId && f.Name == folderName);
+
+            bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == parentId && f.Name == folderName);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newFolder = new FolderModel
+                {
+                    Name = folderName,
+                    ParentId = parentId,
+                    Status = status,
+                };
+
+                _context.Folders.Add(newFolder);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Folder {FolderName} successfully created by user {UserName}.", folderName, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
+                return false;
+            }
         }
         public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
         {
@@ -161,7 +202,6 @@ namespace ShoperiaDocumentation.Services
                 }
             }
         }
-
         public async Task<bool> RenameFolderAsync(int folderId, string newFolderName, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
@@ -219,6 +259,60 @@ namespace ShoperiaDocumentation.Services
 
         #endregion
         #region FILE CREATE/RENAME/DELETE
+        public async Task<bool> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create file {FileName} without admin permissions.", user.Identity?.Name, name);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name))
+            {
+                _logger.LogWarning("Invalid file name {FileName} provided for creation by user {UserName}.", name, user.Identity?.Name);
+                return false;
+            }
+
+            bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newFile = new FileModel
+                {
+                    Name = name,
+                    ParentId = parentId,
+                    Status = status,
+                };
+
+                _context.Files.Add(newFile);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("File {FileName} successfully created by user {UserName}.", name, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create file {FileName} by user {UserName}.", name, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", name, user.Identity?.Name);
+                return false;
+            }
+        }
         public async Task<bool> DeleteFileAsync(int fileId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))

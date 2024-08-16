@@ -5,6 +5,7 @@
         public string? RootFolderName { get; set; }
         public string? SubFolderName { get; set; }
         public string? RemainingPath { get; set; }
+        public int? CurrentFolderId { get; set; }
         public IEnumerable<FolderModel>? Folders { get; set; }
         public IEnumerable<FileModel>? Files { get; set; }
 
