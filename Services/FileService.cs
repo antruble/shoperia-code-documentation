@@ -421,5 +421,65 @@ namespace ShoperiaDocumentation.Services
         }
 
         #endregion
+        #region METHOD CREATE
+        public async Task<bool> CreateMethodAsync(int fileId, string methodName, List<string>? descriptions, string methodCode, string methodStatus, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create method {MethodName} without admin permissions.", user.Identity?.Name, methodName);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(methodName) || string.IsNullOrWhiteSpace(methodName))
+            {
+                _logger.LogWarning("Invalid method name {MethodName} provided for creation by user {UserName}."
+                    , methodName, user.Identity?.Name);
+                return false;
+            }
+
+            bool nameAlreadyExist = await _context.Methods.AnyAsync(f => f.FileId == fileId && f.Name == methodName);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {methodName} method, because there is already a method with this name in the same file.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newMethod = new MethodModel
+                {
+                    Name = methodName,
+                    FileId = fileId,
+                    Descriptions = descriptions?.Select(desc => new DescriptionModel { Content = desc }).ToList(),
+                    FullCode = methodCode,
+                    Status = methodStatus,
+                };
+
+                _context.Methods.Add(newMethod);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Method {MethodName} successfully created by user {UserName}.", methodName, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create method {MethodName} by user {UserName}.", methodName, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the method {Method} by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+        }
+        #endregion
+
     }
 }

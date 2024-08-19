@@ -7,9 +7,10 @@ namespace ShoperiaDocumentation.Models
         [Key]
         public int Id { get; set; }
         [Required]
-        public string Name { get; set; }
-        public string Status { get; set; } // "New" or "Modified"
-        public ICollection<DescriptionModel> Descriptions { get; set; }
-        public string FullCode { get; set; }
+        public required string Name { get; set; }
+        public required string Status { get; set; } // "New" or "Modified"
+        public ICollection<DescriptionModel>? Descriptions { get; set; }
+        public string? FullCode { get; set; }
+        public required int FileId { get; set; }
     }
 }

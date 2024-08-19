@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using ShoperiaDocumentation.Models;
 using System.Security.Claims;
 
@@ -20,6 +21,9 @@ namespace ShoperiaDocumentation.Services
         Task<bool> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user);
         Task<bool> DeleteFileAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
+        #endregion
+        #region METHOD
+        Task<bool> CreateMethodAsync(int fileId, string methodName, List<string>? descriptions, string methodCode, string methodStatus, ClaimsPrincipal user);
         #endregion
     }
 }

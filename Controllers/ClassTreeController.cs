@@ -109,6 +109,30 @@ namespace ShoperiaDocumentation.Controllers
                 return BadRequest("Failed to rename folder.");
             }
         }
-        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateMethod([FromBody] CreateMethodRequest request)
+        {
+            bool success = await _fileService.CreateMethodAsync(
+                request.FileId,
+                request.Name,
+                request.Description,  // Itt most List<string> lesz, amit a CreateMethodAsync kezel
+                request.Code,
+                request.Status,
+                User
+            );
+
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Failed to create method.");
+            }
+        }
+
+
     }
 }
