@@ -2,7 +2,8 @@
 {
     public class FileContentViewModel
     {
-        public string FileName { get; set; }
-        public IEnumerable<MethodModel> Methods { get; set; }
+        public required int FileId { get; set; }
+        public required string FileName { get; set; }
+        public IEnumerable<MethodModel> Methods { get; set; } = Enumerable.Empty<MethodModel>();
     }
 }

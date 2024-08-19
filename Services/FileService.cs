@@ -91,6 +91,7 @@ namespace ShoperiaDocumentation.Services
 
             var fileContent = new FileContentViewModel
             {
+                FileId = fileId,
                 FileName = file.Name,
                 Methods = file.Methods
             };

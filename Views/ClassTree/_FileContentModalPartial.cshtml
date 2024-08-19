@@ -3,6 +3,7 @@
 <div id="fileModalContent">
     <div class="flex justify-between items-center">
         <h2 class="text-2xl font-bold">@Model.FileName</h2>
+        <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="showCreateMethodForm()">Create</button>
     </div>
     <div class="mt-4">
         @foreach (var method in Model.Methods)
@@ -25,9 +26,20 @@
     </div>
 </div>
 
-<script>
-    function openCodeWindow(code) {
-        var newWindow = window.open("", "_blank");
-        newWindow.document.write("<pre>" + code + "</pre>");
-    }
-</script>
+<!-- Fly-in modal for creating a new method -->
+<div id="createMethodFlyIn" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex justify-center items-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
+        <h3 class="text-xl font-bold mb-4">Create New Method</h3>
+        <label for="methodName" class="block text-sm font-medium text-gray-700">Method Name</label>
+        <input type="text" id="methodName" class="w-full mt-2 mb-4 p-2 border rounded-md" placeholder="Enter method name">
+
+        <label for="methodDescription" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea id="methodDescription" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method description"></textarea>
+
+        <div class="flex justify-end">
+            <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" onclick="createMethod()">Create</button>
+            <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="closeCreateMethodForm()">Cancel</button>
+        </div>
+    </div>
+</div>
+
