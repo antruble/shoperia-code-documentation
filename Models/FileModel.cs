@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShoperiaDocumentation.Models
 {
@@ -17,9 +17,8 @@ namespace ShoperiaDocumentation.Models
         public string Status { get; set; } // "New" or "Modified"
 
         [ForeignKey("ParentId")]
-        public FolderModel ParentFolder { get; set; }
+        public FolderModel? ParentFolder { get; set; }
 
-        public IEnumerable<MethodModel> Methods { get; set; }
-
+        public virtual ICollection<MethodModel> Methods { get; set; } = new List<MethodModel>();
     }
 }

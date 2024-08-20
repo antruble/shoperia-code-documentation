@@ -117,7 +117,7 @@ namespace ShoperiaDocumentation.Controllers
             bool success = await _fileService.CreateMethodAsync(
                 request.FileId,
                 request.Name,
-                request.Description,  // Itt most List<string> lesz, amit a CreateMethodAsync kezel
+                request.Description,  
                 request.Code,
                 request.Status,
                 User

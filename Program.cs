@@ -96,6 +96,11 @@ namespace ShoperiaDocumentation
                 name: "classtree-renamefolderorfile",
                 pattern: "ClassTree/RenameFolderOrFile",
                 defaults: new { controller = "ClassTree", action = "RenameFolderOrFile" });
+            
+            app.MapControllerRoute(
+                name: "classtree-createmethod",
+                pattern: "ClassTree/CreateMethod",
+                defaults: new { controller = "ClassTree", action = "CreateMethod" });
 
             app.MapControllerRoute(
                 name: "classtree",
@@ -112,7 +117,7 @@ namespace ShoperiaDocumentation
 
 
             app.MapRazorPages();
-
+            Log.Information("Application has started successfully.");
             app.Run();
         }
     }

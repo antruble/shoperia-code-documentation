@@ -44,7 +44,11 @@ namespace ShoperiaDocumentation.Services
             var subFolderName = pathSegments.Length > 1 ? pathSegments[1] : string.Empty;
             var remainingPath = pathSegments.Length > 2 ? string.Join("/", pathSegments.Skip(2)) : string.Empty;
             var folders = pathSegments.Length > 1 ? await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync() : null;
-            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).ToListAsync() : null;
+            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).Include(f => f.Methods).ToListAsync() : null;
+            foreach (var file in files)
+            {
+                _logger.LogInformation($"FILENAME: {file.Name} METHODCOUNT: {file.Methods.Count()}");
+            }
 
             var result = new FolderHierarchyViewModel
             {
@@ -454,6 +458,7 @@ namespace ShoperiaDocumentation.Services
                     Descriptions = descriptions?.Select(desc => new DescriptionModel { Content = desc }).ToList(),
                     FullCode = methodCode,
                     Status = methodStatus,
+                    FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {methodName} method model: filemodel can't be null")
                 };
 
                 _context.Methods.Add(newMethod);
