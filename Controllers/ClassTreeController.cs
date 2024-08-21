@@ -57,7 +57,6 @@ namespace ShoperiaDocumentation.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteFolderOrFile([FromBody] DeleteItemRequest request)
         {
-            _logger.LogInformation($"{request.ItemId}");
             var user = await _userManager.GetUserAsync(User);
             var success = await _fileService.DeleteFolderAsync(request.ItemId, User);
             if (success)
@@ -132,7 +131,36 @@ namespace ShoperiaDocumentation.Controllers
                 return BadRequest("Failed to create method.");
             }
         }
-
+        [HttpPut]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditMethod(int id, [FromBody] CreateMethodRequest request)
+        {
+            bool success = await _fileService.UpdateMethodAsync(id, request.FileId, request.Name, request.Description, request.Code, request.Status, User);
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Failed to update method.");
+            }
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteMethod(int id)
+        {
+            bool success = await _fileService.DeleteMethodAsync(id, User);
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Failed to update method.");
+            }
+        }
 
     }
 }

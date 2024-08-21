@@ -23,7 +23,9 @@ namespace ShoperiaDocumentation.Services
         Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion
         #region METHOD
-        Task<bool> CreateMethodAsync(int fileId, string methodName, List<string>? descriptions, string methodCode, string methodStatus, ClaimsPrincipal user);
+        Task<bool> CreateMethodAsync(int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user);
+        Task<bool> UpdateMethodAsync(int methodId, int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user);
+        Task<bool> DeleteMethodAsync(int methodId, ClaimsPrincipal user);
         #endregion
     }
 }

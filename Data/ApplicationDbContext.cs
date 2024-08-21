@@ -13,6 +13,5 @@ namespace ShoperiaDocumentation.Data
         public DbSet<FolderModel> Folders { get; set; }
         public DbSet<FileModel> Files { get; set; }
         public DbSet<MethodModel> Methods { get; set; }
-        public DbSet<DescriptionModel> Descriptions { get; set; }
     }
 }
