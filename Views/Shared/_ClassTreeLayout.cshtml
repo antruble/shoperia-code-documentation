@@ -91,9 +91,9 @@
                 <!-- Content will be inserted here dynamically -->
             </div>
             <!-- Fly-in modal for creating a new method -->
-            <div id="createMethodFlyIn" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex justify-center items-center z-50">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-1/3">
-                    <input type="hidden" id="fileId" name="__FileId" value="@* @Model.FileId *@" />
+            <div id="createMethodFlyIn" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex justify-center items-center z-50 text-black">
+                <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
+                    <input type="hidden" id="fileId" name="__FileId" value="" />
                     <input type="hidden" id="methodId" name="__MethodId" />
 
                     <h3 class="text-xl font-bold mb-4" id="modalTitle">Create New Method</h3>
@@ -120,7 +120,7 @@
         </div>
     </div>
 
-    <!-- Minimized Modal Button -->
+    <!-- Minimized Modal Button --> 
     <div id="minimizedModalButton" class="hidden fixed bottom-4 right-4">
         <button class="bg-gray-900 text-white p-2 rounded" onclick="restoreModal()">Open Modal</button>
     </div>
