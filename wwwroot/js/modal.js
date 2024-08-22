@@ -1,4 +1,4 @@
-const openFiles = [];
+let openFiles = [];
 let openedFileId = -1;
 
 document.addEventListener('DOMContentLoaded', async function () {
@@ -18,20 +18,29 @@ document.addEventListener('DOMContentLoaded', async function () {
             e.preventDefault();
             const fileId = this.getAttribute('data-file-id');
             const fileName = this.getAttribute('data-file-name');
-
-            //fetchFileContent(fileId, fileName);
-
             // ÚJ SOROK
             await openFile({id: fileId, name: fileName});
         });
     });
 });
+async function fetchFileContent(fileId) {
+    try {
+        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        return await response.text();
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+        return null;
+    }
+}
 
 function saveOpenFilesToLocalStorage() {
     localStorage.setItem('openFiles', JSON.stringify(openFiles));
 }
 async function openFile(file) {
-    console.log(`Megnyitom a ${file.id} ID-jû ${file.name} nevû fájlt`);
     await createTab(file);
     selectTab(file);
     await loadContent(file.id);
@@ -39,28 +48,59 @@ async function openFile(file) {
     document.getElementById('modal').classList.remove('hidden');
 }
 async function createTab(file) {
-    console.log(`MEGNÉZEM HOGY KELL E LÉTREHOZNOM NEKI TABOT: ${!openFiles.some(f => f.id === file.id) }`);
     if (!openFiles.some(f => f.id === file.id)) {
         openFiles.push(file);
         saveOpenFilesToLocalStorage();
-        console.log(`beleraktam az openFiles tömbbe a ${file.id} ID-T`);
+
         const tabs = document.getElementById('tabs');
         const tab = document.createElement('div');
-        tab.className = 'tab p-2 bg-gray-800 text-white rounded';
+        tab.className = 'tab p-2 bg-gray-800 text-white rounded flex items-center';
         tab.dataset.id = file.id;
-        tab.innerText = file.name;
-        tab.onclick = async () => await selectTab(file);
+
+        const tabName = document.createElement('span');
+        tabName.innerText = file.name;
+        tabName.onclick = async () => await selectTab(file);
+        tab.appendChild(tabName);
+
+        const closeButton = document.createElement('button');
+        closeButton.innerText = 'X';
+        closeButton.className = 'ml-2 text-red-500 hover:text-red-700';
+        closeButton.onclick = (e) => {
+            e.stopPropagation(); // Megakadályozza a tab kiválasztását, amikor a X-re kattintasz
+            closeTab(file.id);
+        };
+        tab.appendChild(closeButton);
+
         tabs.appendChild(tab);
     }
 }
+
+function closeTab(fileId) {
+    openFiles = openFiles.filter(f => f.id !== fileId);
+    saveOpenFilesToLocalStorage();
+
+    // Távolítsa el a tab elemet
+    const tab = document.querySelector(`.tab[data-id="${fileId}"]`);
+    if (tab) {
+        tab.remove();
+    }
+
+    // Törölje a modal tartalmát, ha a bezárt tab volt a megnyitva
+    const contentDiv = document.getElementById(`content-${fileId}`);
+    if (contentDiv && !openFiles.length) {
+        document.getElementById('modal').classList.add('hidden');
+        document.getElementById('modalContent').innerHTML = ''; // Kiüríti a modal tartalmát
+    } else if (contentDiv) {
+        contentDiv.remove();
+    }
+}
+
 async function selectTab(file) {
-    console.log(`EDDIG A ${openedFileId} volt megnyitva, most a ${file.id}-t akarom, tehét ez a kettõ egyenlõ? : ${Number(openedFileId) !== Number(file.id) }`); 
     if (Number(openedFileId) !== Number(file.id)) {
         const tabs = document.getElementById('tabs');
         const allTabs = Array.from(tabs.querySelectorAll('.tab'));
 
         openedFileId = file.id;
-        console.log(`BEÁLLYTOM KIVÁLASZTOTTNAK AZ ID: ${file.id}`);
         // Válasszuk ki a megfelelõ tabot
         allTabs.forEach(tab => {
             if (Number(tab.dataset.id) === Number(file.id)) {
@@ -70,6 +110,10 @@ async function selectTab(file) {
             }
         });
         await loadContent(file.id);
+
+        // set the hidden inputs data for method creation
+        document.getElementById('fileId').value = file.id;
+        const methodId = document.getElementById('methodId');
     }
 }
 async function loadContent(fileId) {    
@@ -101,18 +145,4 @@ function restoreModal() {
     const minimizedButton = document.getElementById('minimizedModalButton');
     modal.classList.remove('hidden');
     minimizedButton.classList.add('hidden');
-}
-
-async function fetchFileContent(fileId) {
-    try {
-        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}`);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        return await response.text();
-    } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        return null;
-    }
 }

@@ -33,6 +33,9 @@
         .tab {
             cursor: pointer;
         }
+        .active {
+            background-color:grey;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white">
@@ -112,7 +115,10 @@
                     <textarea id="methodCode" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method code"></textarea>
 
                     <div class="flex justify-end">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" id="saveMethodButton" onclick="createMethod()">Create</button>
+                        <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" id="saveMethodButton" 
+                                onclick="createMethod().then(() => refreshContent()).catch(error => console.error('Error:', error))">
+                            Create
+                        </button>
                         <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="closeCreateMethodForm()">Cancel</button>
                     </div>
                 </div>

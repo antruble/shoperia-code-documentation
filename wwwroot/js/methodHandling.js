@@ -14,10 +14,7 @@ async function deleteMethod(methodId) {
                 },
             });
 
-            if (response.ok) {
-                console.log("ok");
-                //location.reload();
-            } else {
+            if (!response.ok) {
                 const errorText = await response.text();
                 alert(`Failed to delete method: ${errorText}`);
             }
@@ -60,6 +57,7 @@ async function createMethod() {
     const token = document.getElementById('antiForgeryToken').value;
     const url = methodId ? `/ClassTree/EditMethod/${methodId}` : '/ClassTree/CreateMethod';
     const method = methodId ? 'PUT' : 'POST';
+
     try {
         const response = await fetch(url, {
             method: method,
@@ -76,10 +74,7 @@ async function createMethod() {
             })
         });
 
-        if (response.ok) {
-            //location.reload();
-            console.log("ok")
-        } else {
+        if (!response.ok) {
             const errorText = await response.text();
             alert(`Failed to create method: ${errorText}`);
         }
@@ -89,4 +84,9 @@ async function createMethod() {
     } finally {
         closeCreateMethodForm(); // Close the fly-in after creating the method
     }
+}
+
+function refreshContent() {
+    const fileId = document.getElementById("fileId").value;
+    loadContent(fileId);
 }
