@@ -44,7 +44,7 @@ namespace ShoperiaDocumentation.Services
             var subFolderName = pathSegments.Length > 1 ? pathSegments[1] : string.Empty;
             var remainingPath = pathSegments.Length > 2 ? string.Join("/", pathSegments.Skip(2)) : string.Empty;
             var folders = pathSegments.Length > 1 ? await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync() : null;
-            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).ToListAsync() : null;
+            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).Include(f => f.Methods).ToListAsync() : null;
 
             var result = new FolderHierarchyViewModel
             {
@@ -91,6 +91,7 @@ namespace ShoperiaDocumentation.Services
 
             var fileContent = new FileContentViewModel
             {
+                FileId = fileId,
                 FileName = file.Name,
                 Methods = file.Methods
             };
@@ -420,5 +421,185 @@ namespace ShoperiaDocumentation.Services
         }
 
         #endregion
+        #region METHOD CREATE
+        public async Task<bool> CreateMethodAsync(int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create method {MethodName} without admin permissions.", user.Identity?.Name, methodName);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(methodName) || string.IsNullOrWhiteSpace(methodName))
+            {
+                _logger.LogWarning("Invalid method name {MethodName} provided for creation by user {UserName}."
+                    , methodName, user.Identity?.Name);
+                return false;
+            }
+
+            bool nameAlreadyExist = await _context.Methods.AnyAsync(f => f.FileId == fileId && f.Name == methodName);
+            if (nameAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {methodName} method, because there is already a method with this name in the same file.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newMethod = new MethodModel
+                {
+                    Name = methodName,
+                    FileId = fileId,
+                    Description = description,
+                    FullCode = methodCode,
+                    Status = methodStatus,
+                    FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {methodName} method model: filemodel can't be null")
+                };
+
+                _context.Methods.Add(newMethod);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Method {MethodName} successfully created by user {UserName}.", methodName, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create method {MethodName} by user {UserName}.", methodName, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the method {Method} by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateMethodAsync(int methodId, int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to update method {MethodName} without admin permissions.", user.Identity?.Name, methodName);
+                return false;
+            }
+
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(methodName))
+            {
+                _logger.LogWarning("Attempted to update method with an invalid name by user {UserName}.", user.Identity?.Name);
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(methodStatus))
+            {
+                _logger.LogWarning("Attempted to update method {MethodName} with an invalid status by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var method = await _context.Methods.FirstOrDefaultAsync(m => m.Id == methodId);
+                if (method == null)
+                {
+                    _logger.LogWarning("Method with ID {MethodId} not found for updating by user {UserName}.", methodId, user.Identity?.Name);
+                    return false;
+                }
+
+                // Ensure method is associated with the correct file
+                if (method.FileId != fileId)
+                {
+                    _logger.LogWarning("Method with ID {MethodId} does not belong to file with ID {FileId} for updating by user {UserName}.", methodId, fileId, user.Identity?.Name);
+                    return false;
+                }
+
+                // Update method properties
+                method.Name = methodName;
+                method.Status = methodStatus;
+                method.FullCode = methodCode;
+                method.Description = description;
+
+                _context.Methods.Update(method);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Method {MethodName} successfully updated by user {UserName}.", methodName, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to update method {MethodName} by user {UserName}.", methodName, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while updating the method {MethodName} by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+        }
+        public async Task<bool> DeleteMethodAsync(int methodId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to delete method {MethodId} without admin permissions.", user.Identity?.Name, methodId);
+                return false;
+            }
+
+            if (methodId < 0)
+            {
+                _logger.LogWarning("Invalid method ID {MethodId} provided for deletion by user {UserName}.", methodId, user.Identity?.Name);
+                return false;
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var method = await _context.Methods.FindAsync(methodId);
+                    if (method == null)
+                    {
+                        _logger.LogWarning("Method with ID {MethodId} not found for deletion by user {UserName}.", methodId, user.Identity?.Name);
+                        return false;
+                    }
+
+                    _context.Methods.Remove(method);
+                    var result = await _context.SaveChangesAsync();
+
+                    if (result > 0)
+                    {
+                        await transaction.CommitAsync();
+                        _logger.LogInformation("Method with ID {MethodId} successfully deleted by user {UserName}.", methodId, user.Identity?.Name);
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No changes detected while attempting to delete method with ID {MethodId} by user {UserName}.", methodId, user.Identity?.Name);
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error occurred while deleting method with ID {MethodId} by user {UserName}.", methodId, user.Identity?.Name);
+                    return false;
+                }
+            }
+        }
+
+        #endregion
+
     }
 }
