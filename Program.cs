@@ -37,6 +37,8 @@ namespace ShoperiaDocumentation
 
             // Register the FileService
             builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<IFileProcessingService, FileProcessingService>();
+
 
             var app = builder.Build();
 
@@ -112,6 +114,13 @@ namespace ShoperiaDocumentation
                 pattern: "ClassTree/DeleteMethod/{id}",
                 defaults: new { controller = "ClassTree", action = "DeleteMethod" });
 
+            //API
+            app.MapControllerRoute(
+                name: "api-jsonupload",
+                pattern: "api/JsonUpload/Upload",
+                new { controller = "JsonUpload", action = "UploadJsonFile" });
+
+            // default routing
             app.MapControllerRoute(
                 name: "classtree",
                 pattern: "ClassTree/{*path}",

@@ -1,0 +1,159 @@
+{
+  "files": [
+    {
+      "path": "Libraries/Nop.Services/Blogs/BlogService.cs",
+      "status": "edited",
+      "methods": [
+        {
+          "name": "GetLast8BlogPostsAsync",
+          "description": "Lekéri az utolsó 8 blogbejegyzést.",
+          "code": "public async Task<IEnumerable<BlogPost>> GetLast8BlogPostsAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/AjanlokService.cs",
+      "status": "new",
+      "description": "Az IAjanlokService interfészt megvalósító osztály, amely a bannerek és banner képek kezelésére szolgál.",
+      "methods": [
+        {
+          "name": "DeleteBannerek",
+          "description": "Törli a megadott bannert.",
+          "code": "public void DeleteBannerek(Bannerek bannerek) { /* ... */ }"
+        },
+        {
+          "name": "GetAllBannerek",
+          "description": "Visszaadja az összes bannert, opcionálisan csak az aktívakat.",
+          "code": "public IEnumerable<Bannerek> GetAllBannerek(bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+        },
+        {
+          "name": "GetBannerekById",
+          "description": "Visszaadja a megadott azonosítójú bannert.",
+          "code": "public Bannerek GetBannerekById(int bannerekId) { /* ... */ }"
+        },
+        {
+          "name": "InsertBannerek",
+          "description": "Beszúr egy új bannert.",
+          "code": "public void InsertBannerek(Bannerek bannerek) { /* ... */ }"
+        },
+        {
+          "name": "UpdateBannerek",
+          "description": "Frissíti a megadott bannert.",
+          "code": "public void UpdateBannerek(Bannerek bannerek) { /* ... */ }"
+        },
+        {
+          "name": "DeleteBannerKepek",
+          "description": "Törli a megadott banner képet.",
+          "code": "public void DeleteBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+        },
+        {
+          "name": "GetAllBannerKepek",
+          "description": "Visszaadja az összes banner képet, opcionálisan csak az aktívakat.",
+          "code": "public IEnumerable<BannerKepek> GetAllBannerKepek(bool csakAktivakat) { /* ... */ }"
+        },
+        {
+          "name": "GetBannerKepekByBannerId",
+          "description": "Visszaadja a megadott bannerhez tartozó képeket.",
+          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerId(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+        },
+        {
+          "name": "GetBannerKepekByBannerIdAdmin",
+          "description": "Admin felülethez hasonlóan visszaadja a megadott bannerhez tartozó képeket.",
+          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerIdAdmin(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+        },
+        {
+          "name": "GetBannerKepekById",
+          "description": "Visszaadja a megadott azonosítójú banner képet.",
+          "code": "public BannerKepek GetBannerKepekById(int bannerKepekId) { /* ... */ }"
+        },
+        {
+          "name": "InsertBannerKepek",
+          "description": "Beszúr egy új banner képet.",
+          "code": "public void InsertBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+        },
+        {
+          "name": "UpdateBannerKepek",
+          "description": "Frissíti a megadott banner képet.",
+          "code": "public void UpdateBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+        },
+        {
+          "name": "HonapMegallapitasa",
+          "description": "Visszaadja a megadott dátum hónapjának nevét.",
+          "code": "public string HonapMegallapitasa(DateTime datum) { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/AkcioEllenorzesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "Lekéri az összes akciós terméket, ellenőrzi az akciókat és frissíti az adatokat.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/AktivGyartokEllenorzesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "Lekéri az összes gyártót és frissíti a termékszámokat.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/AktivKategoriakEllenorzesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "Lekéri az összes kategóriát és frissíti a publikálási státuszt.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/AliveTesztKuldesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "HTTP-kérést küld a megadott URL-re és naplózza a választ.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/BHDKeszletfrissitesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "Frissíti a termékek készletinformációit.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    },
+    {
+      "path": "Libraries/Nop.Services/Catalog/CashBackTermekekEllenorzesTask.cs",
+      "status": "new",
+      "description": "Megvalósítja az IScheduleTask interfészt.",
+      "methods": [
+        {
+          "name": "ExecuteAsync",
+          "description": "Ellenőrzi és frissíti a cashback termékeket.",
+          "code": "public async Task ExecuteAsync() { /* ... */ }"
+        }
+      ]
+    }
+  ]
+}
