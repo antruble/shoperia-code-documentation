@@ -98,7 +98,7 @@ namespace ShoperiaDocumentation.Controllers
             if (request.Type == "folder")
                 success = await _fileService.CreateFolderAsync(request.Name, request.Status, request.ParentId, User) != null;
             else if(request.Type == "file")
-                success = await _fileService.CreateFileAsync(request.Name, request.Status, request.ParentId, User);
+                success = await _fileService.CreateFileAsync(request.Name, request.Status, request.ParentId, User) != null;
             if (success)
             {
                 return Ok();

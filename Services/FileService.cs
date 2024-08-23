@@ -265,25 +265,25 @@ namespace ShoperiaDocumentation.Services
         }
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        public async Task<bool> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
+        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
                 _logger.LogWarning("User {UserName} attempted to create file {FileName} without admin permissions.", user.Identity?.Name, name);
-                return false;
+                return null;
             }
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name))
             {
                 _logger.LogWarning("Invalid file name {FileName} provided for creation by user {UserName}.", name, user.Identity?.Name);
-                return false;
+                return null;
             }
 
             bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
             if (nameAlreadyExist)
             {
                 _logger.LogError("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
-                return false;
+                return null;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -303,20 +303,20 @@ namespace ShoperiaDocumentation.Services
                 {
                     await transaction.CommitAsync();
                     _logger.LogInformation("File {FileName} successfully created by user {UserName}.", name, user.Identity?.Name);
-                    return true;
+                    return newFile.Id;
                 }
                 else
                 {
                     _logger.LogWarning("No changes detected while attempting to create file {FileName} by user {UserName}.", name, user.Identity?.Name);
                     await transaction.RollbackAsync();
-                    return false;
+                    return null;
                 }
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", name, user.Identity?.Name);
-                return false;
+                return null;
             }
         }
         public async Task<bool> DeleteFileAsync(int fileId, ClaimsPrincipal user)
@@ -485,7 +485,33 @@ namespace ShoperiaDocumentation.Services
                 return false;
             }
         }
+        public async Task<bool> CreateOrUpdateMethodAsync(int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create or update method {MethodName} without admin permissions.", user.Identity?.Name, methodName);
+                return false;
+            }
 
+            if (string.IsNullOrWhiteSpace(methodName))
+            {
+                _logger.LogWarning("Invalid method name {MethodName} provided for creation or update by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+
+            var existingMethod = await _context.Methods.FirstOrDefaultAsync(m => m.FileId == fileId && m.Name == methodName);
+
+            if (existingMethod != null)
+            {
+                // Update existing method
+                return await UpdateMethodAsync(existingMethod.Id, fileId, methodName, description, methodCode, methodStatus, user);
+            }
+            else
+            {
+                // Create new method
+                return await CreateMethodAsync(fileId, methodName, description, methodCode, methodStatus, user);
+            }
+        }
         public async Task<bool> UpdateMethodAsync(int methodId, int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))

@@ -34,21 +34,38 @@ namespace ShoperiaDocumentation.Services
 
                 // Mappák létrehozása, ha nem léteznek
                 var directory = Path.GetDirectoryName(filePath);
+                int parentId = -1;
                 if (directory != null)
-                    await CreateDirectories(directory, user);
-
+                    parentId = await CreateDirectories(directory, user);
+                if (parentId == -1)
+                {
+                    _logger.LogError($"Something went wrong at the CreateDirectories method while processed {filePath} path.");
+                    continue;
+                }
                 // Fájl létrehozása vagy frissítése
-                //await _fileService.CreateOrUpdateFileAsync(filePath, file.Status, user);
+                var fileName = Path.GetFileNameWithoutExtension(filePath);
+
+                if (fileName == null)
+                {
+                    _logger.LogError($"Something went wrong while tried to get file name from the path: {filePath}");
+                    continue;
+                }
+                int? fileId = await _fileService.CreateFileAsync(fileName, file.Status, parentId, user);
+                if (fileId == null)
+                {
+                    _logger.LogError($"Something went wrong while tried to create the file from the path: {filePath}");
+                    continue;
+                }
 
                 foreach (var method in file.Methods)
                 {
                     // Metódus létrehozása vagy frissítése
                     _logger.LogInformation($"Processing method: {method.Name} in file: {filePath}");
-                    //await _fileService.CreateOrUpdateMethodAsync(filePath, method, user);
+                    await _fileService.CreateOrUpdateMethodAsync(fileId ?? -1, method.Name, method.Description, method.Code, "new", user);
                 }
             }
         }
-        public async Task CreateDirectories(string? path, ClaimsPrincipal user) 
+        public async Task<int> CreateDirectories(string? path, ClaimsPrincipal user) 
         {
             if (path != null)
             {
@@ -65,14 +82,16 @@ namespace ShoperiaDocumentation.Services
                         if (parentId == -1)
                         {
                             _logger.LogError($"Root directory is missing with the name of {dir}!");
-                            return;
+                            return -1;
                         }
                         parentId = await _fileService.CreateFolderAsync(dir, "new", parentId, user);
                         continue;
                     }
                     parentId = folderId;
                 }
+                return parentId ?? -1;
             }
+            return -1;
         }
 
         public class RootData

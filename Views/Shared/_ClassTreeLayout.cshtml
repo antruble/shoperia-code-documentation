@@ -85,7 +85,7 @@
     <div id="modal" class="fixed z-50 inset-0 overflow-y-auto hidden h-screen p-12">
         <div class="absolute left-0 top-0 h-full w-full bg-black bg-opacity-75 cursor-pointer" onclick="minimizeModal()"></div>
         <div class="bg-white rounded-lg text-left shadow-xl transform transition-all h-full w-fullead rounded shadow-xl">
-            <div class="bg-gray-900 p-4 flex justify-between items-center">
+            <div class="bg-gray-900 p-4 flex justify-between items-center" style="height:10%;">
                 <div id="tabs" class="flex space-x-4">
                     <!-- Tabs will be inserted here dynamically -->
                 </div>
@@ -94,7 +94,7 @@
                     <button type="button" class="text-white" onclick="closeModal()">✕</button>
                 </div>
             </div>
-            <div id="modalContent" class="p-4">
+            <div id="modalContent" class="p-4 overflow-scroll" style="height: 90%;">
                 <!-- Content will be inserted here dynamically -->
             </div>
             <!-- Fly-in modal for creating a new method -->
