@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
@@ -99,26 +100,31 @@ namespace ShoperiaDocumentation.Services
             return fileContent;
         }
 
-        #region FOLDER CREATE/RENAME/DELETE
-        public async Task<bool> CreateFolderAsync(string folderName, string status, int parentId, ClaimsPrincipal user)
+        #region FOLDER CREATE/RENAME/DELETE/API
+        public async Task<int?> CreateFolderAsync(string folderName, string status, int? parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
                 _logger.LogWarning("User {UserName} attempted to create folder {FolderId} without admin permissions.", user.Identity?.Name, folderName);
-                return false;
+                return null;
             }
-
+            if (parentId == null)
+            {
+                _logger.LogWarning($"User {user.Identity?.Name} attempted to create a root directory with the name of {folderName} (the parentId was null)");
+                return null;
+            }
             if (string.IsNullOrEmpty(folderName) || string.IsNullOrWhiteSpace(folderName))
             {
                 _logger.LogWarning("Invalid folder name {FolderName} provided for creation by user {UserName}.", folderName, user.Identity?.Name);
-                return false;
+                return null;
             }
 
             bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == parentId && f.Name == folderName);
             if (nameAlreadyExist)
             {
-                _logger.LogError($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
-                return false;
+                var folder = await _context.Folders.FirstOrDefaultAsync(f => f.ParentId == parentId && f.Name == folderName);
+                _logger.LogWarning($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
+                return folder?.Id;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -138,22 +144,23 @@ namespace ShoperiaDocumentation.Services
                 {
                     await transaction.CommitAsync();
                     _logger.LogInformation("Folder {FolderName} successfully created by user {UserName}.", folderName, user.Identity?.Name);
-                    return true;
+                    return newFolder.Id;
                 }
                 else
                 {
                     _logger.LogWarning("No changes detected while attempting to create folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
                     await transaction.RollbackAsync();
-                    return false;
+                    return null;
                 }
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "An error occurred while creating the folder {FolderName} by user {UserName}.", folderName, user.Identity?.Name);
-                return false;
+                return null;
             }
         }
+
         public async Task<bool> DeleteFolderAsync(int folderId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
@@ -257,28 +264,28 @@ namespace ShoperiaDocumentation.Services
                 return false;
             }
         }
-
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        public async Task<bool> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
+        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
             {
                 _logger.LogWarning("User {UserName} attempted to create file {FileName} without admin permissions.", user.Identity?.Name, name);
-                return false;
+                return null;
             }
 
             if (string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name))
             {
                 _logger.LogWarning("Invalid file name {FileName} provided for creation by user {UserName}.", name, user.Identity?.Name);
-                return false;
+                return null;
             }
 
             bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
             if (nameAlreadyExist)
             {
-                _logger.LogError("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
-                return false;
+                var file = _context.Files.FirstOrDefault(f => f.Name == name && f.ParentId == parentId);
+                _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
+                return file?.Id;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -298,20 +305,20 @@ namespace ShoperiaDocumentation.Services
                 {
                     await transaction.CommitAsync();
                     _logger.LogInformation("File {FileName} successfully created by user {UserName}.", name, user.Identity?.Name);
-                    return true;
+                    return newFile.Id;
                 }
                 else
                 {
                     _logger.LogWarning("No changes detected while attempting to create file {FileName} by user {UserName}.", name, user.Identity?.Name);
                     await transaction.RollbackAsync();
-                    return false;
+                    return null;
                 }
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", name, user.Identity?.Name);
-                return false;
+                return null;
             }
         }
         public async Task<bool> DeleteFileAsync(int fileId, ClaimsPrincipal user)
@@ -480,7 +487,33 @@ namespace ShoperiaDocumentation.Services
                 return false;
             }
         }
+        public async Task<bool> CreateOrUpdateMethodAsync(int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create or update method {MethodName} without admin permissions.", user.Identity?.Name, methodName);
+                return false;
+            }
 
+            if (string.IsNullOrWhiteSpace(methodName))
+            {
+                _logger.LogWarning("Invalid method name {MethodName} provided for creation or update by user {UserName}.", methodName, user.Identity?.Name);
+                return false;
+            }
+
+            var existingMethod = await _context.Methods.FirstOrDefaultAsync(m => m.FileId == fileId && m.Name == methodName);
+
+            if (existingMethod != null)
+            {
+                // Update existing method
+                return await UpdateMethodAsync(existingMethod.Id, fileId, methodName, description, methodCode, methodStatus, user);
+            }
+            else
+            {
+                // Create new method
+                return await CreateMethodAsync(fileId, methodName, description, methodCode, methodStatus, user);
+            }
+        }
         public async Task<bool> UpdateMethodAsync(int methodId, int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user)
         {
             if (!user.IsInRole("Admin"))
@@ -600,6 +633,15 @@ namespace ShoperiaDocumentation.Services
         }
 
         #endregion
+        #region SEARCH
+        public async Task<int?> GetFolderIdByNameAndParentId(string name, int? parentId)
+        {
+            var folder = await _context.Folders
+                .FirstOrDefaultAsync(f => f.Name.Trim().ToLower() == name.Trim().ToLower() && f.ParentId == parentId);
 
+            return folder?.Id;
+        }
+
+        #endregion
     }
 }
