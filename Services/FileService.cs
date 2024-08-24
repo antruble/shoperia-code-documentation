@@ -122,8 +122,9 @@ namespace ShoperiaDocumentation.Services
             bool nameAlreadyExist = await _context.Folders.AnyAsync(f => f.ParentId == parentId && f.Name == folderName);
             if (nameAlreadyExist)
             {
-                _logger.LogError($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
-                return null;
+                var folder = await _context.Folders.FirstOrDefaultAsync(f => f.ParentId == parentId && f.Name == folderName);
+                _logger.LogWarning($"Failed to create {folderName} folder, because there is already a folder with this name in its directory.");
+                return folder?.Id;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -282,8 +283,9 @@ namespace ShoperiaDocumentation.Services
             bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
             if (nameAlreadyExist)
             {
-                _logger.LogError("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
-                return null;
+                var file = _context.Files.FirstOrDefault(f => f.Name == name && f.ParentId == parentId);
+                _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
+                return file?.Id;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();

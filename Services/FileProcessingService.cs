@@ -18,8 +18,6 @@ namespace ShoperiaDocumentation.Services
 
         public async Task ProcessJsonAsync(string jsonData, ClaimsPrincipal user)
         {
-            _logger.LogInformation("LEFUT A ProcessJsonAsync METÓDUS");
-
             var rootData = JsonConvert.DeserializeObject<RootData>(jsonData);
             if (rootData?.Files == null)
             {
@@ -61,7 +59,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     // Metódus létrehozása vagy frissítése
                     _logger.LogInformation($"Processing method: {method.Name} in file: {filePath}");
-                    await _fileService.CreateOrUpdateMethodAsync(fileId ?? -1, method.Name, method.Description, method.Code, "new", user);
+                    await _fileService.CreateOrUpdateMethodAsync(fileId ?? -1, method.Name, method.Description, method.Code, method.Status, user);
                 }
             }
         }
@@ -122,6 +120,9 @@ namespace ShoperiaDocumentation.Services
 
             [JsonProperty("code")]
             public string Code { get; set; }
+            [JsonProperty("status")]
+            public string Status { get; set; }
+
         }
     }
 }

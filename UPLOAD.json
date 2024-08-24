@@ -7,7 +7,8 @@
         {
           "name": "GetLast8BlogPostsAsync",
           "description": "Lekéri az utolsó 8 blogbejegyzést.",
-          "code": "public async Task<IEnumerable<BlogPost>> GetLast8BlogPostsAsync() { /* ... */ }"
+          "code": "public async Task<IEnumerable<BlogPost>> GetLast8BlogPostsAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -19,67 +20,80 @@
         {
           "name": "DeleteBannerek",
           "description": "Törli a megadott bannert.",
-          "code": "public void DeleteBannerek(Bannerek bannerek) { /* ... */ }"
+          "code": "public void DeleteBannerek(Bannerek bannerek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetAllBannerek",
           "description": "Visszaadja az összes bannert, opcionálisan csak az aktívakat.",
-          "code": "public IEnumerable<Bannerek> GetAllBannerek(bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+          "code": "public IEnumerable<Bannerek> GetAllBannerek(bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetBannerekById",
           "description": "Visszaadja a megadott azonosítójú bannert.",
-          "code": "public Bannerek GetBannerekById(int bannerekId) { /* ... */ }"
+          "code": "public Bannerek GetBannerekById(int bannerekId) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "InsertBannerek",
           "description": "Beszúr egy új bannert.",
-          "code": "public void InsertBannerek(Bannerek bannerek) { /* ... */ }"
+          "code": "public void InsertBannerek(Bannerek bannerek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "UpdateBannerek",
           "description": "Frissíti a megadott bannert.",
-          "code": "public void UpdateBannerek(Bannerek bannerek) { /* ... */ }"
+          "code": "public void UpdateBannerek(Bannerek bannerek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "DeleteBannerKepek",
           "description": "Törli a megadott banner képet.",
-          "code": "public void DeleteBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+          "code": "public void DeleteBannerKepek(BannerKepek bannerKepek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetAllBannerKepek",
           "description": "Visszaadja az összes banner képet, opcionálisan csak az aktívakat.",
-          "code": "public IEnumerable<BannerKepek> GetAllBannerKepek(bool csakAktivakat) { /* ... */ }"
+          "code": "public IEnumerable<BannerKepek> GetAllBannerKepek(bool csakAktivakat) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetBannerKepekByBannerId",
           "description": "Visszaadja a megadott bannerhez tartozó képeket.",
-          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerId(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerId(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetBannerKepekByBannerIdAdmin",
           "description": "Admin felülethez hasonlóan visszaadja a megadott bannerhez tartozó képeket.",
-          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerIdAdmin(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }"
+          "code": "public IEnumerable<BannerKepek> GetBannerKepekByBannerIdAdmin(int bannerId, bool csakAktivakat, int pageIndex, int pageSize) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "GetBannerKepekById",
           "description": "Visszaadja a megadott azonosítójú banner képet.",
-          "code": "public BannerKepek GetBannerKepekById(int bannerKepekId) { /* ... */ }"
+          "code": "public BannerKepek GetBannerKepekById(int bannerKepekId) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "InsertBannerKepek",
           "description": "Beszúr egy új banner képet.",
-          "code": "public void InsertBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+          "code": "public void InsertBannerKepek(BannerKepek bannerKepek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "UpdateBannerKepek",
           "description": "Frissíti a megadott banner képet.",
-          "code": "public void UpdateBannerKepek(BannerKepek bannerKepek) { /* ... */ }"
+          "code": "public void UpdateBannerKepek(BannerKepek bannerKepek) { /* ... */ }",
+          "status": "edited"
         },
         {
           "name": "HonapMegallapitasa",
           "description": "Visszaadja a megadott dátum hónapjának nevét.",
-          "code": "public string HonapMegallapitasa(DateTime datum) { /* ... */ }"
+          "code": "public string HonapMegallapitasa(DateTime datum) { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -91,7 +105,8 @@
         {
           "name": "ExecuteAsync",
           "description": "Lekéri az összes akciós terméket, ellenőrzi az akciókat és frissíti az adatokat.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -103,7 +118,8 @@
         {
           "name": "ExecuteAsync",
           "description": "Lekéri az összes gyártót és frissíti a termékszámokat.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -115,7 +131,8 @@
         {
           "name": "ExecuteAsync",
           "description": "Lekéri az összes kategóriát és frissíti a publikálási státuszt.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -127,7 +144,8 @@
         {
           "name": "ExecuteAsync",
           "description": "HTTP-kérést küld a megadott URL-re és naplózza a választ.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -139,7 +157,8 @@
         {
           "name": "ExecuteAsync",
           "description": "Frissíti a termékek készletinformációit.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     },
@@ -151,7 +170,8 @@
         {
           "name": "ExecuteAsync",
           "description": "Ellenőrzi és frissíti a cashback termékeket.",
-          "code": "public async Task ExecuteAsync() { /* ... */ }"
+          "code": "public async Task ExecuteAsync() { /* ... */ }",
+          "status": "edited"
         }
       ]
     }
