@@ -1,7 +1,14 @@
 ﻿function openCodeWindow(code) {
     var newWindow = window.open("", "_blank");
-    newWindow.document.write("<pre>" + code + "</pre>");
+    var escapedCode = code
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    newWindow.document.write("<pre>" + escapedCode + "</pre>");
 }
+
 async function deleteMethod(methodId) {
     if (confirm('Are you sure you want to delete this method?')) {
         try {

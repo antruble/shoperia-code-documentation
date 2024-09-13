@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Services;
+using System.Text;
 
 namespace ShoperiaDocumentation
 {
@@ -30,15 +34,65 @@ namespace ShoperiaDocumentation
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+
+                // Disable password complexity requirements for easier development
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 5; // Minimum jelszóhossz
+            })
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
 
             // Register the FileService
             builder.Services.AddScoped<IFileService, FileService>();
             builder.Services.AddScoped<IFileProcessingService, FileProcessingService>();
+            // JWT authentication configuration
+            var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;  // Cookie hitelesítés alapértelmezetten
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;      // Cookie hitelesítés a kihívásokhoz (pl. bejelentkezés)
+                options.DefaultScheme = IdentityConstants.ApplicationScheme;               // Alapértelmezett hitelesítési séma
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Identity/Account/Login";  // Cookie beállítások
+                options.LogoutPath = "/Identity/Account/Logout";
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            })
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
+            });
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            });
 
             var app = builder.Build();
 
@@ -71,12 +125,15 @@ namespace ShoperiaDocumentation
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
+            app.UseCors("AllowAllOrigins");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -119,6 +176,16 @@ namespace ShoperiaDocumentation
                 name: "api-jsonupload",
                 pattern: "api/JsonUpload/Upload",
                 new { controller = "JsonUpload", action = "UploadJsonFile" });
+
+            app.MapControllerRoute(
+                name: "api-checkfileexists",
+                pattern: "api/Api/CheckFileExists",
+                defaults: new { controller = "Api", action = "CheckFileExists" });
+
+            app.MapControllerRoute(
+                name: "api-processjsondata",
+                pattern: "api/Api/ProcessJsonData",
+                defaults: new { controller = "Api", action = "ProcessJsonData" });
 
             // default routing
             app.MapControllerRoute(

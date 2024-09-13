@@ -28,7 +28,7 @@ namespace ShoperiaDocumentation.Data
                 Email = "admin@admin.com"
             };
 
-            string adminPassword = "Admin@123";
+            string adminPassword = "admin";
 
             var admin = await userManager.FindByEmailAsync("admin@admin.com");
 
@@ -38,6 +38,11 @@ namespace ShoperiaDocumentation.Data
                 if (createAdmin.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
+                    logger.LogInformation("Admin user created successfully.");
+                }
+                else
+                {
+                    logger.LogError("Failed to create admin user. Errors: {Errors}", string.Join(", ", createAdmin.Errors.Select(e => e.Description)));
                 }
             }
 
@@ -47,7 +52,7 @@ namespace ShoperiaDocumentation.Data
                 Email = "user@user.com"
             };
 
-            string userPassword = "User@123";
+            string userPassword = "user";
 
             var user = await userManager.FindByEmailAsync("user@user.com");
 
@@ -116,73 +121,7 @@ namespace ShoperiaDocumentation.Data
                     throw;
                 }
 
-                //// Add more nested folders as needed
-                //var nestedFolders = new FolderModel[]
-                //{
-                //    new FolderModel { Name = "Folder1", ParentId = subFolders[0].Id },
-                //    new FolderModel { Name = "Folder2", ParentId = subFolders[0].Id },
-                //    new FolderModel { Name = "Folder3", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder4", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder5", ParentId = subFolders[1].Id  },
-                //    new FolderModel { Name = "Folder6", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder7", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder8", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder9", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder10", ParentId = subFolders[1].Id },
-                //    new FolderModel { Name = "Folder11", ParentId = subFolders[2].Id },
-                //    new FolderModel { Name = "Folder12", ParentId = subFolders[2].Id },
-                //    new FolderModel { Name = "Folder13", ParentId = subFolders[3].Id },
-                //    new FolderModel { Name = "Folder14", ParentId = subFolders[3].Id },
-                //    new FolderModel { Name = "Folder15", ParentId = subFolders[4].Id },
-                //    new FolderModel { Name = "Folder16", ParentId = subFolders[4].Id },
-                //    new FolderModel { Name = "Folder17", ParentId = subFolders[4].Id },
-                //};
-
-                //context.Folders.AddRange(nestedFolders);
-
-                //try
-                //{
-                //    await context.SaveChangesAsync();
-                //}
-                //catch (Exception ex)
-                //{
-                //    logger.LogError(ex, "An error occurred while seeding the nested folders.");
-                //    throw;
-                //}
-
-                //var files = new FileModel[]
-                //{
-                //    new FileModel { Name = "File1", ParentId = nestedFolders[0].Id },
-                //    new FileModel { Name = "File2", ParentId = nestedFolders[0].Id },
-                //    new FileModel { Name = "File3", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File4", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File5", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File6", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File7", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File8", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File9", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File10", ParentId = nestedFolders[1].Id },
-                //    new FileModel { Name = "File11", ParentId = nestedFolders[2].Id },
-                //    new FileModel { Name = "File12", ParentId = nestedFolders[2].Id },
-                //    new FileModel { Name = "File13", ParentId = nestedFolders[3].Id },
-                //    new FileModel { Name = "File14", ParentId = nestedFolders[3].Id },
-                //    new FileModel { Name = "File15", ParentId = nestedFolders[4].Id },
-                //    new FileModel { Name = "File16", ParentId = nestedFolders[4].Id },
-                //    new FileModel { Name = "File17", ParentId = nestedFolders[4].Id },
-                //};
-
-                //context.Files.AddRange(files);
-
-                //try
-                //{
-                //    logger.LogCritical($"FILES FILES FILES {files.Length}");
-                //    await context.SaveChangesAsync();
-                //}
-                //catch (Exception ex)
-                //{
-                //    logger.LogError(ex, "An error occurred while seeding the files.");
-                //    throw;
-                //}
+                
             }
         }
     }

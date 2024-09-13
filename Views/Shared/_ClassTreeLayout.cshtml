@@ -71,10 +71,13 @@
                 }
             </div>
         </nav>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="jsonFile" name="jsonFile" accept=".json" required />
-            <button type="submit">Upload</button>
-        </form>
+        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+        {
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="jsonFile" name="jsonFile" accept=".json" required />
+                <button type="submit">Upload</button>
+            </form>
+        }
     </header>
 
     <main class="p-4" id="folderContainer">
@@ -154,9 +157,17 @@
                     method: 'POST',
                     body: formData
                 });
-
                 const result = await response.json();
-                document.getElementById('message').textContent = result.message;
+
+                if (response.ok) {
+                    location.reload();
+                    console.log(result.message);
+                } else {
+                    document.getElementById('message').textContent = result.message || 'Error uploading file.';
+                }
+                // const result = await response.json();
+                // console.log(result);
+                // document.getElementById('message').textContent = result.message;
 
             } catch (error) {
                 console.error('Error uploading file:', error);
