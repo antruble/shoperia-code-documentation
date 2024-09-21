@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using ShoperiaDocumentation.Services;
+using System.IO;
 
 namespace ShoperiaDocumentation.Controllers
 {
@@ -25,14 +26,13 @@ namespace ShoperiaDocumentation.Controllers
         [HttpGet("CheckFileExists")]
         public async Task<IActionResult> CheckFileExists(string path)
         {
-            _logger.LogInformation($"Sikeres CheckFileExists hívás. Path: {path}");
             if (string.IsNullOrWhiteSpace(path))
             {
                 return BadRequest("File name cannot be empty.");
             }
 
             var fileExists = await _fileService.FileExistsAsync(path);
-            _logger.LogInformation($"CheckFileExists hívás eredménye: {fileExists}");
+            _logger.LogInformation($"Sikeres CheckFileExists hívás az alábbi útvonalhoz: {path}! Eredmény: {fileExists}");
             return Ok(fileExists);
         }
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -47,6 +47,7 @@ namespace ShoperiaDocumentation.Controllers
             try
             {
                 await _fileProcessingService.ProcessJsonAsync(JsonConvert.SerializeObject(jsonData), User);
+                _logger.LogInformation($"Sikeresen feltöltve {jsonData.Files} darab fájl!");
                 return Ok(new { message = "JSON data processed successfully." });
             }
             catch (Exception ex)

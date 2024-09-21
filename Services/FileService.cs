@@ -664,7 +664,6 @@ namespace ShoperiaDocumentation.Services
             {
                 var folderName = pathSegments[i];
                 var folderId = await GetFolderIdByNameAndParentId(folderName, parentId);
-                _logger.LogInformation($"Itt tart: I:{i}, patgSegment[i]: {pathSegments[i]} folderId: {folderId}");
                 // Ha a mappastruktúra nem létezik, visszatérünk false-szal
                 if (folderId == null)
                     return false;
