@@ -124,5 +124,65 @@ namespace ShoperiaDocumentation.Services
             public string Status { get; set; }
 
         }
+
+        //entity
+        public class RootEntityData
+        {
+            [JsonProperty("entities")]
+            public List<EntityData> Entities { get; set; }
+        }
+
+        public class EntityData
+        {
+            [JsonProperty("RelativePath")]
+            public string RelativePath { get; set; }
+
+            [JsonProperty("IsNew")]
+            public bool IsNew { get; set; } // "New" or "Modified"
+
+            [JsonProperty("Fiels")]
+            public List<FieldData>? Fields{ get; set; }
+
+            [JsonProperty("Mapping")]
+            public MappingData? Mapping { get; set; }
+        }
+
+        public class FieldData
+        {
+            [JsonProperty("Name")]
+            public required string Name { get; set; }
+
+            [JsonProperty("Type")]
+            public required string Type { get; set; }
+
+            [JsonProperty("IsNullable")]
+            public bool IsNullable{ get; set; }
+            
+            [JsonProperty("DefaultValue")]
+            public string? DefaultValue { get; set; }
+
+            [JsonProperty("Comment")]
+            public string? Comment { get; set; }
+
+            [JsonProperty("IsPrimaryKey")]
+            public bool IsPrimaryKey { get; set; }
+
+            [JsonProperty("IsForeignKey")]
+            public bool IsForeignKey { get; set; }
+
+            [JsonProperty("ForeignTable")]
+            public string? ForeignTable { get; set; }
+        }
+        public class MappingData
+        {
+            [JsonProperty("RelativePath")]
+            public required string RelativePath { get; set; }
+
+            [JsonProperty("Type")]
+            public required string ParentEntitysName { get; set; }
+
+            [JsonProperty("Code")]
+            public string? Code { get; set; }
+        }
     }
 }

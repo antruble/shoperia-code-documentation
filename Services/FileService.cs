@@ -648,7 +648,7 @@ namespace ShoperiaDocumentation.Services
                 return false;
 
             // Split path into segments using the normalized separator
-            var pathSegments =  filePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            var pathSegments = filePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathSegments.Length < 2)
             {
@@ -677,6 +677,41 @@ namespace ShoperiaDocumentation.Services
 
             return await _context.Files.AnyAsync(f => f.Name.Trim().ToLower() == fileName.Trim().ToLower() && f.ParentId == parentId);
 
+        }
+        public async Task<FileModel?> GetFileByPathAsync(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return null;
+
+            // Split path into segments using the normalized separator
+            var pathSegments = filePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (pathSegments.Length < 2)
+            {
+                _logger.LogWarning($"Nem sikerült az útvonal szétdarabolása");
+                return null; // Nem érvényes fájlútvonal
+            }
+
+            int? parentId = null;
+            // Végigmegyünk az útvonal mappáin
+            for (int i = 0; i < pathSegments.Length - 1; i++)
+            {
+                var folderName = pathSegments[i];
+                var folderId = await GetFolderIdByNameAndParentId(folderName, parentId);
+                // Ha a mappastruktúra nem létezik, visszatérünk false-szal
+                if (folderId == null)
+                    return null;
+
+                // Frissítjük a parentId-t a következő szinthez
+                parentId = folderId;
+            }
+            // Ellenőrizzük, hogy a fájl létezik-e az utolsó szint mappájában
+            var fileNameWithExtension = pathSegments.Last();
+            var fileName = Path.GetFileNameWithoutExtension(fileNameWithExtension); // Kiterjesztés eltávolítása
+
+            return await _context.Files
+                .Include(f => f.Methods)
+                .FirstOrDefaultAsync(f => f.Name.Trim().ToLower() == fileName.Trim().ToLower() && f.ParentId == parentId);
         }
         #endregion
     }

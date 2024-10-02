@@ -31,6 +31,8 @@ namespace ShoperiaDocumentation.Services
         #region SERACHING METHODS
         Task<int?> GetFolderIdByNameAndParentId(string name, int? parentId);
         Task<bool> FileExistsAsync(string filePath);
+        Task<FileModel?> GetFileByPathAsync(string filePath);
+
         #endregion
 
     }
