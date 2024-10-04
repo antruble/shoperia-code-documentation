@@ -15,86 +15,103 @@
     var currentPath = string.Concat(rootFolderName, subFolderName, remainingPath);
 
     bool isAdmin = User.IsInRole("Admin");
+
+    var basePath = "/ClassTree"; // Alapútvonal a mappákhoz
+    var pathParts = currentPath.TrimEnd('/').Split('/'); // Felbontjuk a mappaneveket
+    var cumulativePath = ""; // Tároljuk a felépülő útvonalakat
 }
-<h1>@currentPath</h1>
+<div class="bg-gray-200 w-max px-2 text-black rounded-lg">
+    <h1>
+        @for (int i = 0; i < pathParts.Length; i++)
+        {
+            cumulativePath += "/" + pathParts[i]; // Fokozatosan építjük az útvonalat
+            <a href="@basePath@cumulativePath" class="text-black hover:underline">
+                @pathParts[i]
+            </a>
+
+            @if (i < pathParts.Length - 1)
+            {
+                <span> / </span> <!-- Elválasztó a mappanevek között -->
+            }
+        }
+    </h1>
+</div>
 
 <input type="hidden" id="antiForgeryToken" name="__RequestVerificationToken" value="@Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken" />
 <input type="hidden" id="parentId" name="__ParentId" value="@Model.CurrentFolderId" />
 
-<div class="flex justify-around py-8">
-    <div class="w-1/3">
-        <div class="space-y-4 mt-4">
-            @if (Model.Folders != null)
+<div class="py-8 ml-48">
+    <div class="space-y-4 mt-4">
+        @if (Model.Folders != null)
+        {
+            foreach (var folder in Model.Folders)
             {
-                foreach (var folder in Model.Folders)
-                {
-                    var newPath = string.Concat(currentPath, folder.Name);
-                    <div class="flex items-center folder-item" data-folder-id="@folder.Id">
-                        <div class="folder-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" onclick="navigateToPath('@newPath')">
-                            @folder.Name
-                        </div>
-                        @if (isAdmin)
-                        {
-                            <input type="text" class="hidden folder-name-input text-black" value="@folder.Name" />
-                            <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
-                            <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
-
-                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('folder', @folder.Id)">Delete</button>
-                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('folder', @folder.Id)">Edit</button>
-                        }
+                var newPath = string.Concat(currentPath, folder.Name);
+                <div class="flex items-center folder-item" data-folder-id="@folder.Id">
+                    <div class="folder-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" onclick="navigateToPath('@newPath')">
+                        @folder.Name
                     </div>
-                }
+                    @if (isAdmin)
+                    {
+                        <input type="text" class="hidden folder-name-input text-black" value="@folder.Name" />
+                        <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
+                        <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
+
+                        <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('folder', @folder.Id)">Delete</button>
+                        <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('folder', @folder.Id)">Edit</button>
+                    }
+                </div>
             }
-            <div id="addFolderContainer" class="hidden flex items-center">
-                <input type="text" id="newFolderName" class="folder-name-input text-black" placeholder="New Folder Name" />
-                <select id="newFolderStatus" class="ml-2 text-black">
-                    <option value="New">New</option>
-                    <option value="Modified">Modified</option>
-                </select>
-                <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="createFolderOrFile('folder')">Create</button>
-                <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="cancelAdd('folder')">Cancel</button>
-            </div>
-
-            @if (Model.Files != null)
-            {
-                foreach (var file in Model.Files)
-                {
-                    var newPath = string.Concat(currentPath, file.Name);
-                    <div class="flex items-center file-item" data-file-id="@file.Id" data-file-name="@file.Name">
-                        <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name"
-                             data-is-entity="@file.IsEntity.ToString().ToLower()" data-is-mapping="@file.IsMapping.ToString().ToLower()">
-                            @string.Concat(@file.Name, ".cs")
-                        </div>
-                        @if (isAdmin)
-                        {
-                            <input type="text" class="hidden file-name-input text-black" value="@file.Name" />
-                            <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
-                            <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
-
-                            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('file', @file.Id)">Delete</button>
-                            <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('file', @file.Id)">Edit</button>
-                        }
-                    </div>
-                }
-            }
-            <div id="addFileContainer" class="hidden flex items-center">
-                <input type="text" id="newFileName" class="file-name-input text-black" placeholder="New File Name" />
-                <select id="newFileStatus" class="ml-2 text-black">
-                    <option value="New">New</option>
-                    <option value="Modified">Modified</option>
-                </select>
-                <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="createFolderOrFile('file')">Create</button>
-                <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="cancelAdd('file')">Cancel</button>
-            </div>
-
-
-            @if (isAdmin)
-            {
-                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="showAddInput('folder')">Add Folder</button>
-                <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="showAddInput('file')">Add File</button>
-            }
-
+        }
+        <div id="addFolderContainer" class="hidden flex items-center">
+            <input type="text" id="newFolderName" class="folder-name-input text-black" placeholder="New Folder Name" />
+            <select id="newFolderStatus" class="ml-2 text-black">
+                <option value="New">New</option>
+                <option value="Modified">Modified</option>
+            </select>
+            <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="createFolderOrFile('folder')">Create</button>
+            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="cancelAdd('folder')">Cancel</button>
         </div>
+
+        @if (Model.Files != null)
+        {
+            foreach (var file in Model.Files)
+            {
+                var newPath = string.Concat(currentPath, file.Name);
+                <div class="flex items-center file-item" data-file-id="@file.Id" data-file-name="@file.Name">
+                    <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name"
+                            data-is-entity="@file.IsEntity.ToString().ToLower()" data-is-mapping="@file.IsMapping.ToString().ToLower()">
+                        @string.Concat(@file.Name, ".cs")
+                    </div>
+                    @if (isAdmin)
+                    {
+                        <input type="text" class="hidden file-name-input text-black" value="@file.Name" />
+                        <button class="hidden save-btn ml-2 bg-green-500 text-white px-2 py-1 rounded">✔️</button>
+                        <button class="hidden cancel-btn ml-2 bg-red-500 text-white px-2 py-1 rounded">✖️</button>
+
+                        <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="deleteFolderOrFile('file', @file.Id)">Delete</button>
+                        <button class="ml-2 bg-blue-500 text-white px-2 py-1 rounded" onclick="editFolderOrFile('file', @file.Id)">Edit</button>
+                    }
+                </div>
+            }
+        }
+        <div id="addFileContainer" class="hidden flex items-center">
+            <input type="text" id="newFileName" class="file-name-input text-black" placeholder="New File Name" />
+            <select id="newFileStatus" class="ml-2 text-black">
+                <option value="New">New</option>
+                <option value="Modified">Modified</option>
+            </select>
+            <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="createFolderOrFile('file')">Create</button>
+            <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="cancelAdd('file')">Cancel</button>
+        </div>
+
+
+        @if (isAdmin)
+        {
+            <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="showAddInput('folder')">Add Folder</button>
+            <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="showAddInput('file')">Add File</button>
+        }
+
     </div>
 </div>
 

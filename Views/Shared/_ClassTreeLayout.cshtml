@@ -10,14 +10,13 @@
     <title>@ViewData["Title"] - ClassTree</title>
     <link href="~/css/output.css" rel="stylesheet" />
     <style>
-        .custom-bg {
-            background-color: #1c1134; /* Egyedi háttérszín */
+        .custom-bg-dark {
+            background-color: #13072E; /* Egyedi háttérszín */
         }
-
-        .custom-text {
-            color: #ffffff; /* Egyedi szövegszín */
+        
+        .custom-bg-light {
+            background-color: #18083C; /* Egyedi háttérszín */
         }
-
         .hover-custom-bg:hover {
             background-color: #1c1134; /* Hover állapotban egyedi háttérszín */
         }
@@ -38,20 +37,23 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white">
-    <header class="custom-bg p-4">
-        <nav class="flex justify-between items-center">
-            <div>
-                <span class="text-xl font-bold">osztályfa</span>
-                <span class="text-sm">∘∘</span>
+<body class="custom-bg-light text-white">
+    <header class="flex custom-bg-dark px-4">
+        <nav class="flex flex-col w-11/12">
+            <div class="flex py-4">
+                <div class="flex items-baseline w-1/5">
+                    <span class="text-5xl font-bold">osztályfa</span>
+                    <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
+                    <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
+                </div>
+                <div class="flex-grow flex space-x-4 justify-around" id="mainCategoriesContainer">
+                    @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
+                </div>
             </div>
-            <div class="flex space-x-4" id="mainCategoriesContainer">
-                @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
-            </div>
-            <div class="flex space-x-4" id="subCategoriesContainer">
+            <div class="flex space-x-4 w-full justify-around pb-6" id="subCategoriesContainer">
                 @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootFolderName, selectedSubRootName = @Model.SubFolderName })
             </div>
-            <div class="flex space-x-4">
+            @* <div class="flex space-x-4">
                 @if (SignInManager.IsSignedIn(User))
                 {
                     <ul class="navbar-nav">
@@ -69,15 +71,29 @@
                 {
                     <partial name="_LoginPartial" />
                 }
-            </div>
+            </div> *@
         </nav>
-        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-        {
-            <form id="uploadForm" enctype="multipart/form-data">
-                <input type="file" id="jsonFile" name="jsonFile" accept=".json" required />
-                <button type="submit">Upload</button>
-            </form>
-        }
+        <div class="flex items-center justify-center h-auto w-1/12">
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+                <div class="w-16 border-b-2 pb-1 border-yellow-500 rounded-lg cursor-pointer" onclick="toggleProfileModal()">
+                    <svg class="w-full h-auto" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="rgb(234 179 8)"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect x="0" fill="none" width="20" height="20"></rect> <g> <path d="M10 9.25c-2.27 0-2.73-3.44-2.73-3.44C7 4.02 7.82 2 9.97 2c2.16 0 2.98 2.02 2.71 3.81 0 0-.41 3.44-2.68 3.44zm0 2.57L12.72 10c2.39 0 4.52 2.33 4.52 4.53v2.49s-3.65 1.13-7.24 1.13c-3.65 0-7.24-1.13-7.24-1.13v-2.49c0-2.25 1.94-4.48 4.47-4.48z"></path> </g> </g></svg>
+                </div>
+                <div class="hidden absolute top-0 left-0 h-screen w-full bg-black/50 flex items-center justify-center" id="profileModal">
+                    <div class="bg-purple-950 h-max p-8 rounded flex flex-col relative">
+                        <div class="absolute top-0 right-0 font-extrabold cursor-pointer mr-2 mt-2" onclick="toggleProfileModal()">X</div>
+                        <h1>Admin felület</h1>
+                        <form id="uploadForm" enctype="multipart/form-data" class="">
+                            <input type="file" id="jsonFile" name="jsonFile" accept=".json" required />
+                            <button type="submit">Upload</button>
+                        </form>
+                    </div>
+                </div>
+            }
+            
+        </div>
+        
+        
     </header>
 
     <main class="p-4" id="folderContainer">
@@ -174,6 +190,15 @@
                 document.getElementById('message').textContent = 'Error uploading file.';
             }
         });
+        
+        const toggleProfileModal = () => {
+            const modal = document.getElementById("profileModal");
+            if (modal) {
+                modal.classList.toggle('hidden');
+            } else {
+                console.error("Modal not found");
+            }
+        }
     </script>
 </body>
 </html>
