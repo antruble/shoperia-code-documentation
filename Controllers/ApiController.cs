@@ -64,7 +64,7 @@ namespace ShoperiaDocumentation.Controllers
 
             try
             {
-                //await _fileProcessingService.ProcessJsonAsync(JsonConvert.SerializeObject(jsonData), User); //TODO: PROCESS ENTITIES
+                await _fileProcessingService.ProcessDatabaseJsonAsync(JsonConvert.SerializeObject(jsonData), User);
                 _logger.LogInformation($"Sikeresen feltöltve {jsonData.Entities} darab adatbázis entitás!");
                 return Ok(new { message = "JSON data processed successfully." });
             }

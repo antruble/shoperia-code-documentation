@@ -39,11 +39,11 @@ namespace ShoperiaDocumentation.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetFileContent(int fileId)
+        public async Task<IActionResult> GetFileContent(int fileId, bool isEntity = false, bool isMapping = false)
         {
             try
             {
-                var fileContent = await _fileService.GetFileContentAsync(fileId);
+                var fileContent = await _fileService.GetFileContentAsync(fileId, isEntity: isEntity, isMapping: isMapping);
                 return PartialView("_FileContentModalPartial", fileContent);
             }
             catch (Exception ex)

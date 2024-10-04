@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShoperiaDocumentation.Data;
 
@@ -11,9 +12,11 @@ using ShoperiaDocumentation.Data;
 namespace ShoperiaDocumentation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241004110058_UpdatedFileModelForMapping2")]
+    partial class UpdatedFileModelForMapping2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,6 +287,9 @@ namespace ShoperiaDocumentation.Migrations
                     b.Property<bool>("IsMapping")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("MappingId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -297,6 +303,8 @@ namespace ShoperiaDocumentation.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MappingId");
 
                     b.HasIndex("ParentId");
 
@@ -359,9 +367,7 @@ namespace ShoperiaDocumentation.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId")
-                        .IsUnique()
-                        .HasFilter("[ParentId] IS NOT NULL");
+                    b.HasIndex("ParentId");
 
                     b.ToTable("Mappings");
                 });
@@ -462,9 +468,15 @@ namespace ShoperiaDocumentation.Migrations
 
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
+                    b.HasOne("ShoperiaDocumentation.Models.MappingModel", "Mapping")
+                        .WithMany()
+                        .HasForeignKey("MappingId");
+
                     b.HasOne("ShoperiaDocumentation.Models.FolderModel", "ParentFolder")
                         .WithMany()
                         .HasForeignKey("ParentId");
+
+                    b.Navigation("Mapping");
 
                     b.Navigation("ParentFolder");
                 });
@@ -480,11 +492,11 @@ namespace ShoperiaDocumentation.Migrations
 
             modelBuilder.Entity("ShoperiaDocumentation.Models.MappingModel", b =>
                 {
-                    b.HasOne("ShoperiaDocumentation.Models.FileModel", "ParentFile")
-                        .WithOne("Mapping")
-                        .HasForeignKey("ShoperiaDocumentation.Models.MappingModel", "ParentId");
+                    b.HasOne("ShoperiaDocumentation.Models.FolderModel", "ParentFolder")
+                        .WithMany()
+                        .HasForeignKey("ParentId");
 
-                    b.Navigation("ParentFile");
+                    b.Navigation("ParentFolder");
                 });
 
             modelBuilder.Entity("ShoperiaDocumentation.Models.MethodModel", b =>
@@ -501,8 +513,6 @@ namespace ShoperiaDocumentation.Migrations
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
                     b.Navigation("Fields");
-
-                    b.Navigation("Mapping");
 
                     b.Navigation("Methods");
                 });

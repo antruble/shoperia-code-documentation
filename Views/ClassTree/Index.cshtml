@@ -61,7 +61,8 @@
                 {
                     var newPath = string.Concat(currentPath, file.Name);
                     <div class="flex items-center file-item" data-file-id="@file.Id" data-file-name="@file.Name">
-                        <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name">
+                        <div class="file-name block p-4 rounded-lg text-center bg-gray-800 hover:bg-gray-700 cursor-pointer" data-file-id="@file.Id" data-file-name="@file.Name"
+                             data-is-entity="@file.IsEntity.ToString().ToLower()" data-is-mapping="@file.IsMapping.ToString().ToLower()">
                             @string.Concat(@file.Name, ".cs")
                         </div>
                         @if (isAdmin)
@@ -85,6 +86,8 @@
                 <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="createFolderOrFile('file')">Create</button>
                 <button class="ml-2 bg-red-500 text-white px-2 py-1 rounded" onclick="cancelAdd('file')">Cancel</button>
             </div>
+
+
             @if (isAdmin)
             {
                 <button class="mt-4 bg-green-500 text-white px-4 py-2 rounded" onclick="showAddInput('folder')">Add Folder</button>

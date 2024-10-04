@@ -1,10 +1,14 @@
 ﻿using Azure.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
 using System.IO;
+using System.Reflection;
 using System.Security.Claims;
+using static ShoperiaDocumentation.Services.FileProcessingService;
+using static System.Reflection.Metadata.Ecma335.MethodBodyStreamEncoder;
 
 namespace ShoperiaDocumentation.Services
 {
@@ -81,24 +85,58 @@ namespace ShoperiaDocumentation.Services
 
             return parentId;
         }
-        public async Task<FileContentViewModel> GetFileContentAsync(int fileId)
+        public async Task<FileContentViewModel> GetFileContentAsync(int fileId, bool isEntity = false, bool isMapping = false)
         {
-            // Példa implementáció
-            var file = await _context.Files.Include(f => f.Methods).FirstOrDefaultAsync(f => f.Id == fileId);
-            if (file == null)
+            FileModel? file;
+            FileContentViewModel? responseModel;
+            
+            if (isEntity)
             {
-                // Handle file not found
-                return null;
+                file = await _context.Files.Include(f => f.Fields).FirstOrDefaultAsync(f => f.Id == fileId);
+                if (file == null)
+                    return null; //TODO: handle
+
+                responseModel = new FileContentViewModel
+                {
+                    FileId = fileId,
+                    FileName = file.Name,
+                    Fields = file.Fields,
+                    IsNew = file.Status == "new",
+                    IsEntity = true
+                };
             }
-
-            var fileContent = new FileContentViewModel
+            else if (isMapping)
             {
-                FileId = fileId,
-                FileName = file.Name,
-                Methods = file.Methods
-            };
+                file = await _context.Files.Include(f => f.Mapping).FirstOrDefaultAsync(f => f.Id == fileId);
+                if (file == null)
+                    return null; //TODO: handle
+                
+                responseModel = new FileContentViewModel
+                {
+                    FileId = fileId,
+                    FileName = file.Name,
+                    Mapping = file.Mapping,
+                    IsNew = file.Status == "new",
+                    IsMapping = true
+                };
+            }
+            else
+            { 
+                file = await _context.Files.Include(f => f.Methods).FirstOrDefaultAsync(f => f.Id == fileId);
+               
+                if (file == null)
+                    return null;
 
-            return fileContent;
+                responseModel = new FileContentViewModel
+                {
+                    FileId = fileId,
+                    FileName = file.Name,
+                    Methods = file.Methods,
+                    IsNew = file.Status == "new"
+                };
+            }
+            
+            return responseModel;
         }
 
         #region FOLDER CREATE/RENAME/DELETE/API
@@ -267,7 +305,7 @@ namespace ShoperiaDocumentation.Services
         }
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user)
+        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false)
         {
             if (!user.IsInRole("Admin"))
             {
@@ -284,7 +322,20 @@ namespace ShoperiaDocumentation.Services
             bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == parentId && f.Name == name);
             if (nameAlreadyExist)
             {
-                var file = _context.Files.FirstOrDefault(f => f.Name == name && f.ParentId == parentId);
+                var file = await _context.Files.FirstOrDefaultAsync(f => f.Name == name && f.ParentId == parentId);
+                if (isEntity && !file.IsEntity)
+                {
+                    file.IsEntity = true;
+                    try
+                    {
+                        _context.Files.Update(file);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Failed to update {FileName} file while tried to update isEntity to true: {ex}", name, ex.Message);
+                    }
+                }
                 _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
                 return file?.Id;
             }
@@ -297,6 +348,8 @@ namespace ShoperiaDocumentation.Services
                     Name = name,
                     ParentId = parentId,
                     Status = status,
+                    IsEntity = isEntity,
+                    IsMapping = isMapping,
                 };
 
                 _context.Files.Add(newFile);
@@ -634,6 +687,411 @@ namespace ShoperiaDocumentation.Services
         }
 
         #endregion
+        #region FIELD CRUD
+        public async Task<bool> CreateOrUpdateFieldAsync(int fileId, FieldData field, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create or update method {MethodName} without admin permissions.", user.Identity?.Name, field.Name);
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(field.Name))
+            {
+                _logger.LogWarning("Invalid field name {FieldName} provided for creation or update by user {UserName}.", field.Name, user.Identity?.Name);
+                return false;
+            }
+
+            var existingField = await _context.Fields.FirstOrDefaultAsync(f => f.FileId == fileId && f.Name == field.Name);
+
+            if (existingField != null)
+            {
+                // Update existing method
+                return await UpdateFieldAsync(existingField.Id, fileId, field, user);
+            }
+            else
+            {
+                // Create new method
+                return await CreateFieldAsync(fileId, field, user);
+            }
+        }
+        public async Task<bool> CreateFieldAsync(int fileId, FieldData field, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create method {MethodName} without admin permissions.", user.Identity?.Name, field.Name);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(field.Name) || string.IsNullOrWhiteSpace(field.Name))
+            {
+                _logger.LogWarning("Invalid field name {FieldName} provided for creation by user {UserName}."
+                    , field.Name, user.Identity?.Name);
+                return false;
+            }
+
+            bool isFieldAlreadyExist = await _context.Fields.AnyAsync(f => f.FileId == fileId && f.Name == field.Name);
+            if (isFieldAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {field.Name} field, because there is already a field with this name in the same file.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newField = new FieldModel
+                {
+                    Name = field.Name,
+                    FileId = fileId,
+                    FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
+                    Type = field.Type,
+                    Comment = field.Comment,
+                    DefaultValue = field.DefaultValue,
+                    IsNullable = field.IsNullable,
+                    IsForeignKey = field.IsForeignKey,
+                    IsPrimaryKey = field.IsPrimaryKey,
+                    ForeignTable = field.ForeignTable
+                };
+
+                _context.Fields.Add(newField);
+                var result = await _context.SaveChangesAsync();
+                
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Field {FieldName} successfully created by user {UserName}.", field.Name, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create field {FieldName} by user {UserName}.", field.Name, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the method {FieldName} by user {UserName}.", field.Name, user.Identity?.Name);
+                return false;
+            }
+        }
+        public async Task<bool> UpdateFieldAsync(int fileId, int fieldId, FieldData field, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to update field {FieldName} without admin permissions.", user.Identity?.Name, field.Name);
+                return false;
+            }
+
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(field.Name))
+            {
+                _logger.LogWarning("Attempted to update field with an invalid name by user {UserName}.", user.Identity?.Name);
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var existingField = await _context.Fields.FirstOrDefaultAsync(f => f.Id == fieldId);
+                if (existingField == null)
+                {
+                    _logger.LogWarning("Field with ID {FieldId} not found for updating by user {UserName}.", fieldId, user.Identity?.Name);
+                    return false;
+                }
+
+                // Ensure method is associated with the correct file
+                if (existingField.FileId != fileId)
+                {
+                    _logger.LogWarning("Method with ID {MethodId} does not belong to file with ID {FileId} for updating by user {UserName}.", fieldId, fileId, user.Identity?.Name);
+                    return false;
+                }
+
+                // Update the field's datas
+                existingField.Name = field.Name;
+                existingField.IsNullable = field.IsNullable;
+                existingField.DefaultValue = field.DefaultValue;
+                existingField.ForeignTable = field.ForeignTable;
+                existingField.IsForeignKey = field.IsForeignKey;
+                existingField.IsPrimaryKey = field.IsPrimaryKey;
+                 
+
+                _context.Fields.Update(existingField);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Field {FieldName} successfully updated by user {UserName}.", field.Name, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to update field {FieldName} by user {UserName}.", field.Name, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while updating the field {FieldName} by user {UserName}.", field.Name, user.Identity?.Name);
+                return false;
+            }
+        }
+        public async Task<bool> DeleteFieldAsync(int fieldId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to delete Field {FieldId} without admin permissions.", user.Identity?.Name, fieldId);
+                return false;
+            }
+
+            if (fieldId < 0)
+            {
+                _logger.LogWarning("Invalid Field ID {FieldId} provided for deletion by user {UserName}.", fieldId, user.Identity?.Name);
+                return false;
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var field = await _context.Fields.FindAsync(fieldId);
+                    if (field == null)
+                    {
+                        _logger.LogWarning("Field with ID {FieldId} not found for deletion by user {UserName}.", fieldId, user.Identity?.Name);
+                        return false;
+                    }
+
+                    _context.Fields.Remove(field);
+                    var result = await _context.SaveChangesAsync();
+
+                    if (result > 0)
+                    {
+                        await transaction.CommitAsync();
+                        _logger.LogInformation("Field with ID {FieldId} successfully deleted by user {UserName}.", fieldId, user.Identity?.Name);
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No changes detected while attempting to delete Field with ID {FieldId} by user {UserName}.", fieldId, user.Identity?.Name);
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error occurred while deleting Field with ID {FieldId} by user {UserName}.", fieldId, user.Identity?.Name);
+                    return false;
+                }
+            }
+        }
+
+        #endregion
+        #region MAPPING CRUD
+        public async Task<bool> CreateOrUpdateMappingAsync(MappingData mapping, int parentFileId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create or update mapping {MethodName} without admin permissions.", user.Identity?.Name, mapping.RelativePath);
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(mapping.RelativePath))
+            {
+                _logger.LogWarning("Invalid mapping name {MappingName} provided for creation or update by user {UserName}.", mapping.RelativePath, user.Identity?.Name);
+                return false;
+            }
+
+            var existingMapping = await _context.Mappings.FirstOrDefaultAsync(m => m.RelativePath == mapping.RelativePath && m.ParentId == parentFileId);
+
+            if (existingMapping != null)
+            {
+                if (existingMapping.Code == mapping.Code)
+                {
+                    //TODO: LOG
+                    return true;
+                }
+                // Update existing method
+                return await UpdateMappingAsync(existingMapping.Id, mapping.Code, user);
+            }
+            else
+            {
+                // Create new method
+                return await CreateMappingAsync(mapping, parentFileId, user);
+            }
+        }
+        public async Task<bool> CreateMappingAsync(MappingData mapping, int parentFileId, ClaimsPrincipal user)
+        {
+            if (parentFileId < 0)
+            {
+                _logger.LogWarning("User {UserName} attempted to create mapping {MappingName} but the parentFileId is invalid.", user.Identity?.Name, mapping.RelativePath);
+                return false;
+            }
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create method {MethodName} without admin permissions.", user.Identity?.Name, mapping.RelativePath);
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(mapping.RelativePath) || string.IsNullOrWhiteSpace(mapping.RelativePath))
+            {
+                _logger.LogWarning("Invalid Mapping name {MappingName} provided for creation by user {UserName}."
+                    , mapping.RelativePath, user.Identity?.Name);
+                return false;
+            }
+
+            bool isMappingAlreadyExist = await _context.Mappings.AnyAsync(m => m.RelativePath == mapping.RelativePath && m.ParentId == parentFileId);
+            if (isMappingAlreadyExist)
+            {
+                _logger.LogError($"Failed to create {mapping.RelativePath} Mapping, because there is already a Mapping with this name in the same folder.");
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newMapping = new MappingModel
+                {
+                    RelativePath = mapping.RelativePath,
+                    Code = mapping.Code,
+                    IsNew = mapping.IsNew,
+                    ParentEntitysName = mapping.ParentEntitysName,
+                    ParentId = parentFileId
+                };
+
+                _context.Mappings.Add(newMapping);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Mapping {MappingName} successfully created by user {UserName}.", mapping.RelativePath, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create Mapping {MappingName} by user {UserName}.", mapping.RelativePath, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the method {MappingName} by user {UserName}.", mapping.RelativePath, user.Identity?.Name);
+                return false;
+            }
+        }
+        public async Task<bool> UpdateMappingAsync(int mappingId, string code, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to update mapping {FieldName} without admin permissions.", user.Identity?.Name, mappingId);
+                return false;
+            }
+
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                _logger.LogWarning("Attempted to update field with an invalid name by user {UserName}.", user.Identity?.Name);
+                return false;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var existingMapping = await _context.Mappings.FirstOrDefaultAsync(f => f.Id == mappingId);
+                if (existingMapping == null)
+                {
+                    _logger.LogWarning("Field with ID {FieldId} not found for updating by user {UserName}.", existingMapping.Id, user.Identity?.Name);
+                    return false;
+                }
+
+                // Update the field's datas
+                existingMapping.Code = code;
+
+                _context.Mappings.Update(existingMapping);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("Field {FieldName} successfully updated by user {UserName}.", existingMapping.RelativePath, user.Identity?.Name);
+                    return true;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to update field {FieldName} by user {UserName}.", existingMapping.RelativePath, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while updating the field {FieldName} by user {UserName}.", mappingId, user.Identity?.Name);
+                return false;
+            }
+        }
+        public async Task<bool> DeleteMappingAsync(int mappingId, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to delete Mapping {MappingId} without admin permissions.", user.Identity?.Name, mappingId);
+                return false;
+            }
+
+            if (mappingId < 0)
+            {
+                _logger.LogWarning("Invalid Mapping ID {MappingId} provided for deletion by user {UserName}.", mappingId, user.Identity?.Name);
+                return false;
+            }
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var mapping = await _context.Mappings.FindAsync(mappingId);
+                    if (mapping == null)
+                    {
+                        _logger.LogWarning("Mapping with ID {MappingId} not found for deletion by user {UserName}.", mappingId, user.Identity?.Name);
+                        return false;
+                    }
+
+                    _context.Mappings.Remove(mapping);
+                    var result = await _context.SaveChangesAsync();
+
+                    if (result > 0)
+                    {
+                        await transaction.CommitAsync();
+                        _logger.LogInformation("Mapping with ID {MappingId} successfully deleted by user {UserName}.", mappingId, user.Identity?.Name);
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("No changes detected while attempting to delete Mapping with ID {MappingId} by user {UserName}.", mappingId, user.Identity?.Name);
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Error occurred while deleting Mapping with ID {MappingId} by user {UserName}.", mappingId, user.Identity?.Name);
+                    return false;
+                }
+            }
+        }
+
+        #endregion
+
         #region SEARCH
         public async Task<int?> GetFolderIdByNameAndParentId(string name, int? parentId)
         {

@@ -6,25 +6,45 @@
         <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="showCreateMethodForm()">Create</button>
     </div>
     <div class="mt-4">
-        @foreach (var method in Model.Methods)
-        {
+        @if (Model.IsEntity) {
+            @foreach (var field in Model.Fields)
+            {
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-green-500">@field.Name</h3>
+                    <h3 class="text-xl font-semibold text-yellow-500">@field.Type</h3>
+                </div>
+            }
+        } else if (Model.IsMapping) {
+            var mapping = Model.Mapping;
+            
             <div class="mb-6">
-                <h3 class="text-xl font-semibold @(method.Status == "New" ? "text-green-500" : "text-blue-500")">@method.Name</h3>
-                <p>@method.Description</p>
-                <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700" onclick="openCodeWindow(`@method.FullCode`)">Kód megnyitása</button>
-                @if (User.IsInRole("Admin"))
-                {
-                    <button class="mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-700" 
-                            onclick="showEditMethodForm(@method.Id, '@method.Name', '@method.Status', '@method.FullCode', '@method.Description')">
-                        Edit
-                    </button>
-                    <button class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-                            onclick="deleteMethod(@method.Id).then(() => refreshContent()).catch(error => console.error('Error:', error))">
-                        Delete
-                    </button>
-                    @* <button class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700" onclick="asd()">Delete</button> *@
-                }
+                <h3 class="text-xl font-semibold text-green-500">@mapping?.RelativePath</h3>
+                <h3 class="text-xl font-semibold text-green-500">@mapping?.ParentId</h3>
+                <h3 class="text-xl font-semibold text-green-500">@mapping?.ParentEntitysName</h3>
+                <h3 class="text-xl font-semibold text-yellow-500">@mapping?.Code</h3>
             </div>
+        }
+        else {
+            @foreach (var method in Model.Methods)
+            {
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold @(method.Status == "New" ? "text-green-500" : "text-blue-500")">@method.Name</h3>
+                    <p>@method.Description</p>
+                    <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700" onclick="openCodeWindow(`@method.FullCode`)">Kód megnyitása</button>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <button class="mt-2 px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-700"
+                                onclick="showEditMethodForm(@method.Id, '@method.Name', '@method.Status', '@method.FullCode', '@method.Description')">
+                            Edit
+                        </button>
+                        <button class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
+                                onclick="deleteMethod(@method.Id).then(() => refreshContent()).catch(error => console.error('Error:', error))">
+                            Delete
+                        </button>
+                        @* <button class="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700" onclick="asd()">Delete</button> *@
+                    }
+                </div>
+            }
         }
     </div>
 </div>

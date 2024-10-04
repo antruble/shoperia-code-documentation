@@ -18,14 +18,23 @@ document.addEventListener('DOMContentLoaded', async function () {
             e.preventDefault();
             const fileId = this.getAttribute('data-file-id');
             const fileName = this.getAttribute('data-file-name');
-            // ÚJ SOROK
-            await openFile({id: fileId, name: fileName});
+            const isEntity = this.getAttribute('data-is-entity');
+            const isMapping = this.getAttribute('data-is-mapping');
+
+            console.log("asdasd");
+            const isEntityBool = isEntity === "true" || isEntity === "True"; 
+            const isMappingBool = isMapping === "true" || isMapping === "True"; 
+            console.log(isEntity);
+            console.log(isEntityBool);
+
+            await openFile({ id: fileId, name: fileName, isEntity: isEntityBool, isMapping: isMappingBool });
         });
     });
 });
-async function fetchFileContent(fileId) {
+async function fetchFileContent(fileId, isEntity, isMapping) {
     try {
-        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}`);
+        console.log(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`)
+        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -43,7 +52,7 @@ function saveOpenFilesToLocalStorage() {
 async function openFile(file) {
     await createTab(file);
     selectTab(file);
-    await loadContent(file.id);
+    await loadContent(file.id, file.isEntity, file.isMapping);
     // MODAL MEGNYITÁSA
     document.getElementById('modal').classList.remove('hidden');
 }
@@ -73,6 +82,7 @@ async function createTab(file) {
 
         tabs.appendChild(tab);
     }
+    else { console.log("vanmárlétezik")}
 }
 
 function closeTab(fileId) {
@@ -109,16 +119,16 @@ async function selectTab(file) {
                 tab.classList.remove('active');
             }
         });
-        await loadContent(file.id);
+        //await loadContent(file.id, file.isEntity, file.isMapping);
 
         // set the hidden inputs data for method creation
         document.getElementById('fileId').value = file.id;
         const methodId = document.getElementById('methodId');
     }
 }
-async function loadContent(fileId) {    
+async function loadContent(fileId, isEntity = false, isMapping = false) {    
     // fetch the data
-    const data = await fetchFileContent(fileId);
+    const data = await fetchFileContent(fileId, isEntity, isMapping);
     if (data !== null) {
         const modalContent = document.getElementById('modalContent');
         modalContent.innerHTML = `<div id="content-${fileId}" class="text-black">${data}</div>`;

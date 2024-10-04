@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using static ShoperiaDocumentation.Services.FileProcessingService;
 
 namespace ShoperiaDocumentation.Services
 {
@@ -60,6 +61,74 @@ namespace ShoperiaDocumentation.Services
                     // Metódus létrehozása vagy frissítése
                     _logger.LogInformation($"Processing method: {method.Name} in file: {filePath}");
                     await _fileService.CreateOrUpdateMethodAsync(fileId ?? -1, method.Name, method.Description, method.Code, method.Status, user);
+                }
+            }
+        }
+        public async Task ProcessDatabaseJsonAsync(string jsonData, ClaimsPrincipal user)  //TODO: PROCESS ENTITIES
+        {
+            var rootData = JsonConvert.DeserializeObject<RootEntityData>(jsonData);
+            if (rootData?.Entities == null)
+            {
+                _logger.LogError("No entities found in JSON data.");
+                return;
+            }
+
+            foreach (var entity in rootData.Entities)
+            {
+                string entityPath = entity.RelativePath;
+                _logger.LogInformation($"Processing entity: {entityPath}");
+
+                // Mappák létrehozása, ha nem léteznek
+                var directory = Path.GetDirectoryName(entityPath);
+                int parentId = -1;
+                if (directory != null)
+                    parentId = await CreateDirectories(directory, user);
+                if (parentId == -1)
+                {
+                    _logger.LogError($"Something went wrong at the CreateDirectories method while processed {entityPath} path.");
+                    continue;
+                }
+                // Fájl létrehozása vagy frissítése
+                var fileName = Path.GetFileNameWithoutExtension(entityPath);
+
+                if (fileName == null)
+                {
+                    _logger.LogError($"Something went wrong while tried to get entity name from the path: {entityPath}");
+                    continue;
+                }
+                var status = entity.IsNew ? "new" : "modified";
+                int? fileId = await _fileService.CreateFileAsync(fileName, status, parentId, user, isEntity: true);
+                if (fileId == null)
+                {
+                    _logger.LogError($"Something went wrong while tried to create the entity with the {entityPath} path");
+                    continue;
+                }
+                // Create fields
+                foreach (var field in entity.Fields)
+                {
+                    // Metódus létrehozása vagy frissítése
+                    _logger.LogInformation($"Processing field: {field.Name}");
+                    await _fileService.CreateOrUpdateFieldAsync(fileId ?? -1, field, user);
+                }
+                if (entity.Mapping != null) //TODO CREATE MAPPING
+                {
+                    _logger.LogInformation($"Processing mapping for the entity: {entityPath}");
+
+                    var directoryForMapping = Path.GetDirectoryName(entity.Mapping.RelativePath);
+                    int parentIdForMapping = -1;
+                    if (directoryForMapping != null)
+                        parentIdForMapping = await CreateDirectories(directoryForMapping, user);
+                    if (parentIdForMapping == -1)
+                    {
+                        _logger.LogError($"Something went wrong at the CreateDirectories method while processed {entity.Mapping.RelativePath} path.");
+                        continue;
+                    }
+                    var fileNameForMapping = Path.GetFileNameWithoutExtension(entity.Mapping.RelativePath);
+                    var statusForMapping = entity.Mapping.IsNew ? "new" : "modified";
+                    
+                    var mappingFileId = await _fileService.CreateFileAsync(fileNameForMapping, statusForMapping, parentIdForMapping, user, isMapping: true) ?? -1;
+                    await _fileService.CreateMappingAsync(entity.Mapping, mappingFileId, user);
+
                 }
             }
         }
@@ -178,11 +247,14 @@ namespace ShoperiaDocumentation.Services
             [JsonProperty("RelativePath")]
             public required string RelativePath { get; set; }
 
-            [JsonProperty("Type")]
+            [JsonProperty("ParentEntitysName")]
             public required string ParentEntitysName { get; set; }
 
             [JsonProperty("Code")]
             public string? Code { get; set; }
+
+            [JsonProperty("IsNew")]
+            public required bool IsNew { get; set; }
         }
     }
 }
