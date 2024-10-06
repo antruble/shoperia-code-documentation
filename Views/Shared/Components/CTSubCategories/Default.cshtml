@@ -6,7 +6,7 @@
 @foreach (var folder in Model)
 {
     var isSelected = folder.Name == selectedSubRootName;
-    <a href="@Url.Action("Index", "ClassTree", new { path = $"{selectedRootName}/{folder.Name}" })?.Replace("%2F", "/")" class="text-2xl text-white hover-custom-text @(isSelected ? "underline underline-offset-4 decoration-violet-900" : "")">
+    <a href="@Url.Action("Index", "ClassTree", new { path = $"{selectedRootName}/{folder.Name}" })?.Replace("%2F", "/")" class="text-3xl text-white hover-custom-text @(isSelected ? "underline underline-offset-4 decoration-violet-900" : "")">
         <div class="">
             <span>@folder.Name</span>
         </div>

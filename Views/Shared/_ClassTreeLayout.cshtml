@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - ClassTree</title>
     <link href="~/css/output.css" rel="stylesheet" />
+    
     <style>
         .custom-bg-dark {
             background-color: #13072E; /* Egyedi háttérszín */
@@ -37,8 +38,8 @@
         }
     </style>
 </head>
-<body class="custom-bg-light text-white">
-    <header class="flex custom-bg-dark px-4">
+<body class="custom-bg-light text-white h-screen flex flex-col">
+    <header class="flex custom-bg-dark px-4 " >
         <nav class="flex flex-col w-11/12">
             <div class="flex py-4">
                 <div class="flex items-baseline w-1/5">
@@ -50,7 +51,7 @@
                     @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
                 </div>
             </div>
-            <div class="flex space-x-4 w-full justify-around pb-6" id="subCategoriesContainer">
+            <div class="flex space-x-4 w-full justify-around pb-6" id="subCategoriesContainer" >
                 @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootFolderName, selectedSubRootName = @Model.SubFolderName })
             </div>
             @* <div class="flex space-x-4">
@@ -96,63 +97,15 @@
         
     </header>
 
-    <main class="p-4" id="folderContainer">
+    <main class="grow overflow-hidden flex" id="folderContainer">
         @RenderBody()
     </main>
 
-    <!-- Modal Structure -->
-    <div id="modal" class="fixed z-50 inset-0 overflow-y-auto hidden h-screen p-12">
-        <div class="absolute left-0 top-0 h-full w-full bg-black bg-opacity-75 cursor-pointer" onclick="minimizeModal()"></div>
-        <div class="bg-white rounded-lg text-left shadow-xl transform transition-all h-full w-fullead rounded shadow-xl">
-            <div class="bg-gray-900 p-4 flex justify-between items-center" style="height:10%;">
-                <div id="tabs" class="flex space-x-4">
-                    <!-- Tabs will be inserted here dynamically -->
-                </div>
-                <div>
-                    <button type="button" class="text-white" onclick="minimizeModal()">-</button>
-                    <button type="button" class="text-white" onclick="closeModal()">✕</button>
-                </div>
-            </div>
-            <div id="modalContent" class="p-4 overflow-scroll" style="height: 90%;">
-                <!-- Content will be inserted here dynamically -->
-            </div>
-            <!-- Fly-in modal for creating a new method -->
-            <div id="createMethodFlyIn" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex justify-center items-center z-50 text-black">
-                <div class="bg-white p-6 rounded-lg shadow-lg w-1/2">
-                    <input type="hidden" id="fileId" name="__FileId" value="" />
-                    <input type="hidden" id="methodId" name="__MethodId" />
-
-                    <h3 class="text-xl font-bold mb-4" id="modalTitle">Create New Method</h3>
-                    <label for="methodName" class="block text-sm font-medium text-gray-700">Method Name</label>
-                    <input type="text" id="methodName" class="w-full mt-2 mb-4 p-2 border rounded-md" placeholder="Enter method name">
-
-                    <select id="newMethodStatus" class="ml-2 text-black">
-                        <option value="New">New</option>
-                        <option value="Modified">Modified</option>
-                    </select>
-
-                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea id="description" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method description"></textarea>
-
-                    <label for="methodCode" class="block text-sm font-medium text-gray-700">Code</label>
-                    <textarea id="methodCode" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method code"></textarea>
-
-                    <div class="flex justify-end">
-                        <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" id="saveMethodButton" 
-                                onclick="createMethod().then(() => refreshContent()).catch(error => console.error('Error:', error))">
-                            Create
-                        </button>
-                        <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="closeCreateMethodForm()">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Minimized Modal Button --> 
+    
+   @*  <!-- Minimized Modal Button --> 
     <div id="minimizedModalButton" class="hidden fixed bottom-4 right-4">
         <button class="bg-gray-900 text-white p-2 rounded" onclick="restoreModal()">Open Modal</button>
-    </div>
+    </div> *@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="~/js/modal.js"></script>
