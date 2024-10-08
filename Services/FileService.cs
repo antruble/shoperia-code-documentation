@@ -49,8 +49,21 @@ namespace ShoperiaDocumentation.Services
             var rootFolderName = pathSegments.Length > 0 ? pathSegments[0] : string.Empty;
             var subFolderName = pathSegments.Length > 1 ? pathSegments[1] : string.Empty;
             var remainingPath = pathSegments.Length > 2 ? string.Join("/", pathSegments.Skip(2)) : string.Empty;
-            var folders = pathSegments.Length > 1 ? await _context.Folders.Where(f => f.ParentId == parentId).ToListAsync() : null;
-            var files = pathSegments.Length > 1 ? await _context.Files.Where(f => f.ParentId == parentId).Include(f => f.Methods).ToListAsync() : null;
+           
+            var folders = pathSegments.Length > 1 
+                    ? await _context.Folders
+                        .Where(f => f.ParentId == parentId)
+                        .OrderBy(f => f.Name)
+                        .ToListAsync() 
+                    : null;
+
+            var files = pathSegments.Length > 1 
+                ? await _context.Files
+                    .Where(f => f.ParentId == parentId)
+                    .Include(f => f.Methods)
+                    .OrderBy(f => f.Name)
+                    .ToListAsync() 
+                : null;
 
             var result = new FolderHierarchyViewModel
             {

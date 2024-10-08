@@ -1,0 +1,43 @@
+﻿@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+
+@model ShoperiaDocumentation.Models.FolderHierarchyViewModel
+@{
+    var currentPath = ViewBag.currentPath as string;
+
+    var basePath = "/ClassTree"; // Alapútvonal a mappákhoz
+    var pathParts = currentPath.TrimEnd('/').Split('/'); // Felbontjuk a mappaneveket
+    var cumulativePath = ""; // Tároljuk a felépülő útvonalakat
+
+
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<div class="h-full w-1/6 pr-2 border-violet-900 flex flex-col" id="file-explorer">
+    @if (pathParts.Length > 1)
+    {
+        <div class="py-4 px-2">
+            <div id="file-explorer-pathbar" class="bg-indigo-950 text-slate-200 text-sm rounded-t-xl py-2 px-4 shadow-md border-b-2 border-violet-900">
+                <h1 class="flex gap-1 overflow-x-scroll custom-scrollbar-gray custom-scrollbar ">
+                    @for (int i = 0; i < pathParts.Length; i++)
+                    {
+                        cumulativePath += "/" + pathParts[i]; // Fokozatosan építjük az útvonalat
+                        <a href="@basePath@cumulativePath" class="hover:underline">
+                            @pathParts[i]
+                        </a>
+
+                        @if (i < pathParts.Length - 1)
+                        {
+                            <span> / </span> <!-- Elválasztó a mappanevek között -->
+                        }
+                    }
+                </h1>
+            </div>
+        </div>
+        <input type="hidden" id="antiForgeryToken" name="__RequestVerificationToken" value="@Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext).RequestToken" />
+        <input type="hidden" id="parentId" name="__ParentId" value="@Model.CurrentFolderId" />
+
+        @await Html.PartialAsync("_FolderFileListPartial", Model)
+    }
+</div>

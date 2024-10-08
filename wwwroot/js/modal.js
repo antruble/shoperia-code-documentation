@@ -3,17 +3,21 @@ let openedFileId = -1;
 
 document.addEventListener('DOMContentLoaded', async function () {
     const savedFiles = JSON.parse(localStorage.getItem('openFiles') || '[]');
+    const openedFileId = localStorage.getItem('openedFileId')
     if (savedFiles.length > 0) {
-        document.getElementById('minimizedModalButton').classList.remove('hidden');
+        //document.getElementById('minimizedModalButton').classList.remove('hidden');
     }
     for (const savedFile of savedFiles) {
         if (!openFiles.some(file => file.id === savedFile.id)) {
             await createTab(savedFile);
         }
+        if (savedFile.id === openedFileId) {
+            await selectTab(savedFile);
+        }
     }
 
     // Event listenerek hozzáadása a file linkekhez
-    document.querySelectorAll('.file-name').forEach(link => {
+    document.querySelectorAll('.file-item').forEach(link => {
         link.addEventListener('click',async function (e) {
             e.preventDefault();
             const fileId = this.getAttribute('data-file-id');
@@ -21,11 +25,8 @@ document.addEventListener('DOMContentLoaded', async function () {
             const isEntity = this.getAttribute('data-is-entity');
             const isMapping = this.getAttribute('data-is-mapping');
 
-            console.log("asdasd");
             const isEntityBool = isEntity === "true" || isEntity === "True"; 
             const isMappingBool = isMapping === "true" || isMapping === "True"; 
-            console.log(isEntity);
-            console.log(isEntityBool);
 
             await openFile({ id: fileId, name: fileName, isEntity: isEntityBool, isMapping: isMappingBool });
         });
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 async function fetchFileContent(fileId, isEntity, isMapping) {
     try {
-        console.log(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`)
+        //console.log(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`)
         const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`);
         if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -49,10 +50,12 @@ async function fetchFileContent(fileId, isEntity, isMapping) {
 function saveOpenFilesToLocalStorage() {
     localStorage.setItem('openFiles', JSON.stringify(openFiles));
 }
+function saveOpenedFileIdToLocalStorage(fileId) {
+    localStorage.setItem('openedFileId', fileId);
+}
 async function openFile(file) {
     await createTab(file);
     selectTab(file);
-    await loadContent(file.id, file.isEntity, file.isMapping);
     // MODAL MEGNYITÁSA
     document.getElementById('modal').classList.remove('hidden');
 }
@@ -63,17 +66,18 @@ async function createTab(file) {
 
         const tabs = document.getElementById('tabs');
         const tab = document.createElement('div');
-        tab.className = 'tab p-2 bg-gray-800 text-white rounded flex items-center';
+        tab.className = 'file-tab';
         tab.dataset.id = file.id;
+        tab.onclick = async () => await selectTab(file);
 
         const tabName = document.createElement('span');
         tabName.innerText = file.name;
-        tabName.onclick = async () => await selectTab(file);
+        
         tab.appendChild(tabName);
 
         const closeButton = document.createElement('button');
-        closeButton.innerText = 'X';
-        closeButton.className = 'ml-2 text-red-500 hover:text-red-700';
+        closeButton.innerText = String.fromCharCode('10005');
+        closeButton.className = 'file-tab-close';
         closeButton.onclick = (e) => {
             e.stopPropagation(); // Megakadályozza a tab kiválasztását, amikor a X-re kattintasz
             closeTab(file.id);
@@ -88,19 +92,15 @@ async function createTab(file) {
 function closeTab(fileId) {
     openFiles = openFiles.filter(f => f.id !== fileId);
     saveOpenFilesToLocalStorage();
-
     // Távolítsa el a tab elemet
-    const tab = document.querySelector(`.tab[data-id="${fileId}"]`);
+    const tab = document.querySelector(`.file-tab[data-id="${fileId}"]`);
     if (tab) {
         tab.remove();
     }
 
     // Törölje a modal tartalmát, ha a bezárt tab volt a megnyitva
     const contentDiv = document.getElementById(`content-${fileId}`);
-    if (contentDiv && !openFiles.length) {
-        document.getElementById('modal').classList.add('hidden');
-        document.getElementById('modalContent').innerHTML = ''; // Kiüríti a modal tartalmát
-    } else if (contentDiv) {
+    if (contentDiv) {
         contentDiv.remove();
     }
 }
@@ -108,19 +108,19 @@ function closeTab(fileId) {
 async function selectTab(file) {
     if (Number(openedFileId) !== Number(file.id)) {
         const tabs = document.getElementById('tabs');
-        const allTabs = Array.from(tabs.querySelectorAll('.tab'));
+        const allTabs = Array.from(tabs.querySelectorAll('.file-tab'));
 
         openedFileId = file.id;
+        saveOpenedFileIdToLocalStorage(file.id);
         // Válasszuk ki a megfelelõ tabot
         allTabs.forEach(tab => {
             if (Number(tab.dataset.id) === Number(file.id)) {
-                tab.classList.add('active');
+                tab.classList.add('active-tab');
             } else {
-                tab.classList.remove('active');
+                tab.classList.remove('active-tab');
             }
         });
-        //await loadContent(file.id, file.isEntity, file.isMapping);
-
+        await loadContent(file.id, file.isEntity, file.isMapping);
         // set the hidden inputs data for method creation
         document.getElementById('fileId').value = file.id;
         const methodId = document.getElementById('methodId');
@@ -128,6 +128,7 @@ async function selectTab(file) {
 }
 async function loadContent(fileId, isEntity = false, isMapping = false) {    
     // fetch the data
+    //console.log(fileId)
     const data = await fetchFileContent(fileId, isEntity, isMapping);
     if (data !== null) {
         const modalContent = document.getElementById('modalContent');

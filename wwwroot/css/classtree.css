@@ -1,0 +1,64 @@
+﻿.file-explorer-item:nth-child(odd) {
+    background-color: rgb(30, 27, 75); /* bg-indigo-950 */
+}
+
+.file-explorer-item:nth-child(even) {
+    background-color: rgb(46, 43, 84); /* bg-indigo-850 */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    height: 4px; /* Görgetősáv magassága vízszintes sáv esetén */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent; /* Track háttér (kékes szín, illeszkedve a meglévő színpalettához) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(109 40 217); /* Thumb szín (mélyebb kék) */
+    border-radius: 20px; /* Lekerekítés */
+    margin-top: 5px;
+    /* border: 2px solid #dbeafe; /* Thumb széle */
+}
+.custom-scrollbar-gray::-webkit-scrollbar-thumb {
+    background-color: rgb(148 163 184); /* Thumb szín (mélyebb kék) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #1e3a8a; /* Thumb hover szín */
+}
+.custom-scrollbar-gray::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(203 213 225); /* Thumb hover szín */
+}
+
+.custom-scrollbar-nav::-webkit-scrollbar {
+    width: 5px;
+}
+
+#file-explorer-pathbar {
+    font-family:monospace;
+}
+.file-tab {
+    background-color: rgb(100 116 139);
+    padding: 0.2rem 0.8rem;
+    border-radius: 1rem;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+.file-tab-close {
+    font-weight: bold;
+    margin-left: 0.5rem;
+    color: white;
+    transition: color 0.3s ease;
+}
+.file-tab-close:hover {
+    color: rgb(254 202 202);
+}
+
+.active-tab {
+    background-color: rgb(148 163 184);
+    
+}
