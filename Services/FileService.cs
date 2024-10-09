@@ -38,10 +38,7 @@ namespace ShoperiaDocumentation.Services
         }
         public async Task<FolderHierarchyViewModel> GetFolderHierarchyFromPathAsync(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                return new FolderHierarchyViewModel();
-            }
+
 
             var pathSegments = path.Split('/');
             int? parentId = await GetDeepestParentIdAsync(path);
@@ -49,13 +46,11 @@ namespace ShoperiaDocumentation.Services
             var rootFolderName = pathSegments.Length > 0 ? pathSegments[0] : string.Empty;
             var subFolderName = pathSegments.Length > 1 ? pathSegments[1] : string.Empty;
             var remainingPath = pathSegments.Length > 2 ? string.Join("/", pathSegments.Skip(2)) : string.Empty;
-           
-            var folders = pathSegments.Length > 1 
-                    ? await _context.Folders
+
+            var folders = await _context.Folders
                         .Where(f => f.ParentId == parentId)
                         .OrderBy(f => f.Name)
-                        .ToListAsync() 
-                    : null;
+                        .ToListAsync();
 
             var files = pathSegments.Length > 1 
                 ? await _context.Files
@@ -88,6 +83,8 @@ namespace ShoperiaDocumentation.Services
         }
         public async Task<int?> GetDeepestParentIdAsync(string path)
         {
+            if (string.IsNullOrEmpty(path) || string.IsNullOrWhiteSpace(path))
+                return null;
             int? parentId = null;
             var pathSegments = path.Split('/');
 
@@ -102,7 +99,7 @@ namespace ShoperiaDocumentation.Services
         {
             FileModel? file;
             FileContentViewModel? responseModel;
-            
+            var relativePath = await GetFilePathAsync(fileId);
             if (isEntity)
             {
                 file = await _context.Files.Include(f => f.Fields).FirstOrDefaultAsync(f => f.Id == fileId);
@@ -113,6 +110,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     FileId = fileId,
                     FileName = file.Name,
+                    RelativePath = relativePath,
                     Fields = file.Fields,
                     IsNew = file.Status == "new",
                     IsEntity = true
@@ -128,6 +126,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     FileId = fileId,
                     FileName = file.Name,
+                    RelativePath = relativePath,
                     Mapping = file.Mapping,
                     IsNew = file.Status == "new",
                     IsMapping = true
@@ -144,6 +143,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     FileId = fileId,
                     FileName = file.Name,
+                    RelativePath = relativePath,
                     Methods = file.Methods,
                     IsNew = file.Status == "new"
                 };
@@ -1184,6 +1184,29 @@ namespace ShoperiaDocumentation.Services
                 .Include(f => f.Methods)
                 .FirstOrDefaultAsync(f => f.Name.Trim().ToLower() == fileName.Trim().ToLower() && f.ParentId == parentId);
         }
+        private async Task<string> GetFilePathAsync(int fileId)
+        {
+            var file = await _context.Files.Include(f => f.ParentFolder).FirstOrDefaultAsync(f => f.Id == fileId);
+            if (file == null || file.ParentFolder == null)
+            {
+                _logger.LogWarning("File with ID {FileId} not found or has no parent folder.", fileId);
+                return null; // Ha a fájl vagy a szülő mappa nem található
+            }
+
+            // Kezdjük a file nevével
+            var fullPath = "";
+            var currentFolder = file.ParentFolder;
+
+            // Végigmegyünk az összes szülő mappán
+            while (currentFolder != null)
+            {
+                fullPath = $"{currentFolder.Name}/{fullPath}";
+                currentFolder = await _context.Folders.FirstOrDefaultAsync(f => f.Id == currentFolder.ParentId);
+            }
+
+            return fullPath;
+        }
+
         #endregion
     }
 }

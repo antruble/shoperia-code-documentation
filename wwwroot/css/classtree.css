@@ -1,4 +1,19 @@
-﻿.file-explorer-item:nth-child(odd) {
+﻿.bg-custom-dark {
+    background-color: #13072E; /* Egyedi háttérszín */
+}
+
+.bg-custom-light {
+    background-color: #18083C; /* Egyedi háttérszín */
+}
+
+.hover-custom-bg:hover {
+    background-color: #1c1134; /* Hover állapotban egyedi háttérszín */
+}
+
+.hover-custom-text:hover {
+    color: #ffffff; /* Hover állapotban egyedi szövegszín */
+}
+.file-explorer-item:nth-child(odd) {
     background-color: rgb(30, 27, 75); /* bg-indigo-950 */
 }
 
@@ -6,59 +21,45 @@
     background-color: rgb(46, 43, 84); /* bg-indigo-850 */
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-    height: 4px; /* Görgetősáv magassága vízszintes sáv esetén */
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent; /* Track háttér (kékes szín, illeszkedve a meglévő színpalettához) */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgb(109 40 217); /* Thumb szín (mélyebb kék) */
-    border-radius: 20px; /* Lekerekítés */
-    margin-top: 5px;
-    /* border: 2px solid #dbeafe; /* Thumb széle */
-}
-.custom-scrollbar-gray::-webkit-scrollbar-thumb {
-    background-color: rgb(148 163 184); /* Thumb szín (mélyebb kék) */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #1e3a8a; /* Thumb hover szín */
-}
-.custom-scrollbar-gray::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(203 213 225); /* Thumb hover szín */
-}
-
-.custom-scrollbar-nav::-webkit-scrollbar {
-    width: 5px;
-}
-
 #file-explorer-pathbar {
     font-family:monospace;
 }
 .file-tab {
-    background-color: rgb(100 116 139);
+    background-color: rgb(196 181 253);
+    color: #13072E;
     padding: 0.2rem 0.8rem;
-    border-radius: 1rem;
-    color: white;
+    border-radius: 0.5rem;
     cursor: pointer;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    user-select: none;
+    transition: background-color 0.2s ease;
 }
 .file-tab-close {
     font-weight: bold;
     margin-left: 0.5rem;
-    color: white;
+    color: #13072E;
     transition: color 0.3s ease;
 }
 .file-tab-close:hover {
-    color: rgb(254 202 202);
+    color: #BA2C2C;
 }
 
-.active-tab {
-    background-color: rgb(148 163 184);
-    
+.file-tab.active-tab {
+    background-color: white;
+}
+
+.bg-new {
+    background-color: #9AFF64;
+}
+.text-new {
+    color: #9AFF64;
+}
+.bg-modified {
+    background-color:#649FFF;
+}
+.text-modified {
+    color: #649FFF;
 }

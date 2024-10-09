@@ -4,6 +4,7 @@
     {
         public required int FileId { get; set; }
         public required string FileName { get; set; }
+        public required string RelativePath { get; set; }
         public required bool IsNew { get; set; }
         public bool IsEntity { get; set; } = false;
         public bool IsMapping { get; set; } = false;

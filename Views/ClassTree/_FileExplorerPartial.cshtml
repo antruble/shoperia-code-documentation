@@ -15,8 +15,8 @@
 }
 
 <div class="h-full w-1/6 pr-2 border-violet-900 flex flex-col" id="file-explorer">
-    @if (pathParts.Length > 1)
-    {
+@*     @if (pathParts.Length > 1)
+    { *@
         <div class="py-4 px-2">
             <div id="file-explorer-pathbar" class="bg-indigo-950 text-slate-200 text-sm rounded-t-xl py-2 px-4 shadow-md border-b-2 border-violet-900">
                 <h1 class="flex gap-1 overflow-x-scroll custom-scrollbar-gray custom-scrollbar ">
@@ -39,5 +39,5 @@
         <input type="hidden" id="parentId" name="__ParentId" value="@Model.CurrentFolderId" />
 
         @await Html.PartialAsync("_FolderFileListPartial", Model)
-    }
+    @* } *@
 </div>

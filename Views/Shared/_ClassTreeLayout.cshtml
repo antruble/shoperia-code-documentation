@@ -10,37 +10,11 @@
     <title>@ViewData["Title"] - ClassTree</title>
     <link href="~/css/output.css" rel="stylesheet" />
     <link href="~/css/classtree.css" rel="stylesheet" />
-    
-    <style>
-        .custom-bg-dark {
-            background-color: #13072E; /* Egyedi háttérszín */
-        }
-        
-        .custom-bg-light {
-            background-color: #18083C; /* Egyedi háttérszín */
-        }
-        .hover-custom-bg:hover {
-            background-color: #1c1134; /* Hover állapotban egyedi háttérszín */
-        }
+    <link href="~/css/scrollbars.css" rel="stylesheet" />
 
-        .hover-custom-text:hover {
-            color: #ffffff; /* Hover állapotban egyedi szövegszín */
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .tab {
-            cursor: pointer;
-        }
-        .active {
-            background-color:grey;
-        }
-    </style>
 </head>
-<body class="custom-bg-light text-white h-screen flex flex-col">
-    <header class="flex custom-bg-dark px-4 " >
+<body class="bg-custom-light text-white h-screen flex flex-col">
+    <header class="flex bg-custom-dark px-4 " >
         <nav class="flex flex-col w-11/12">
             <div class="flex py-4">
                 <div class="flex items-baseline w-1/5">

@@ -1,8 +1,13 @@
 ﻿@model ShoperiaDocumentation.Models.FileContentViewModel
 
 <div id="fileModalContent" class="text-white">
-    <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">@string.Concat(@Model.FileName, ".cs")</h2>
+    <div class="mb-6"> 
+        <div class="flex items-center mb-4">
+            <svg class="h-8 w-8 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M12 12C13.1046 12 14 11.1046 14 10C14 8.89543 13.1046 8 12 8C10.8954 8 10 8.89543 10 10C10 11.1046 10.8954 12 12 12Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+            <h2 class="text-xl font-bold ">@Model.RelativePath</h2>
+        </div>
+        <p class="@(Model.IsNew ? "text-new" : "text-modified") text-md font-bold">@(Model.IsNew ? "NEW" : "MOD")</p>
+        <h2 class="text-2xl font-bold ">@Model.FileName<span class="@(Model.IsNew ? "text-new" : "text-modified")">.cs</span></h2>
         @* <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="showCreateMethodForm()">Create</button> *@
     </div>
     <div class="mt-4">
@@ -27,10 +32,12 @@
         else {
             @foreach (var method in Model.Methods)
             {
-                <div class="method-item flex justify-between bg-slate-800 mb-6 px-4 py-2 rounded shadow-xl border-2 border-t-2 border-slate-700">
+                var isNew = method.Status.ToLower() == "new";
+                var textColor = isNew ? "text-new" : "next-modified";
+                <div class="method-item flex justify-between mb-6 px-4 py-2 rounded shadow-xl border-t-2 border-slate-700">
                     <div>
-                        <h3 class="text-xl font-semibold @(method.Status.ToLower() == "new" ? "text-green-500" : "text-blue-500")">@method.Name</h3>
-                        <p>@method.Description</p>
+                        <h3 class="text-xl font-semibold ">@method.Name <span class="@textColor text-sm capitalized">@(isNew ? "NEW" : "MOD")</span></h3>
+                        <p class="text-slate-300 ml-2">@method.Description</p>
                     </div>
                     <button class="mt-4 ml-4 text-white" onclick="openCodeWindow(`@method.FullCode`)"><i>&lt Metódus kódja \&gt</i></button>
                     @if (User.IsInRole("Admin"))
