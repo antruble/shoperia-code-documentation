@@ -5,10 +5,28 @@
 
 @foreach (var folder in Model)
 {
-    var isSelected = folder.Name == selectedRootName;
+    @* var isSelected = folder.Name == selectedRootName;
     <a href="@Url.Action("Index", "ClassTree", new { path = folder.Name })" class="font-extrabold text-3xl text-white hover-custom-text uppercase @(isSelected ? "underline underline-offset-8" : "")">
         <div class="">
             <span>@folder.Name</span>
         </div>
-    </a>
+    </a> *@
+
+    var isSelected = folder.Name.ToLower() == "libraries";
+
+    if (isSelected)
+    {
+        <a href="@Url.Action("Index", "ClassTree", new { path = folder.Name })" class="font-extrabold text-3xl text-white hover-custom-text uppercase underline underline-offset-8">
+            <div>
+                <span>@folder.Name</span>
+            </div>
+        </a>
+    }
+    else
+    {
+        <div class="font-extrabold text-3xl text-gray-500 uppercase">
+            <span>@folder.Name</span>
+        </div>
+    }
+
 }
