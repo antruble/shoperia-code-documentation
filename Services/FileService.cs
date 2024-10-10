@@ -121,7 +121,6 @@ namespace ShoperiaDocumentation.Services
                 file = await _context.Files.Include(f => f.Mapping).FirstOrDefaultAsync(f => f.Id == fileId);
                 if (file == null)
                     return null; //TODO: handle
-                
                 responseModel = new FileContentViewModel
                 {
                     FileId = fileId,

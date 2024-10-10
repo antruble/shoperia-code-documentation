@@ -63,3 +63,6 @@
 .text-modified {
     color: #649FFF;
 }
+.grid-custom {
+    grid-template-columns: 40% 00%;
+}

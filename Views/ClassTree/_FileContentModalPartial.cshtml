@@ -8,25 +8,45 @@
         </div>
         <p class="@(Model.IsNew ? "text-new" : "text-modified") text-md font-bold">@(Model.IsNew ? "NEW" : "MOD")</p>
         <h2 class="text-2xl font-bold ">@Model.FileName<span class="@(Model.IsNew ? "text-new" : "text-modified")">.cs</span></h2>
+        @if(Model.IsMapping || Model.IsEntity)
+        {
+            var entityOrMapping = @Model.IsMapping ? "(Mapping)" : "(Entity)";
+            <h2 class="text-lg ">@entityOrMapping</h2>
+        }
         @* <button class="ml-2 bg-green-500 text-white px-2 py-1 rounded" onclick="showCreateMethodForm()">Create</button> *@
     </div>
     <div class="mt-4">
         @if (Model.IsEntity) {
-            @foreach (var field in Model.Fields)
-            {
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-green-500">@field.Name</h3>
-                    <h3 class="text-xl font-semibold text-yellow-500">@field.Type</h3>
-                </div>
-            }
+            <h4 class="text-xl font-semibold text-slate-300 mb-4">Mezők:</h4>
+            <div class="bg-slate-900 p-4">
+                @foreach (var field in Model.Fields)
+                {
+                    <div class="flex items-center mb-6 h-16 border-b-2 border-slate-800">
+                        <div class="flex-shrink-0 w-6">
+                            <svg class="h-6 w-6 rotate-180" fill="#ffffff" height="200px" width="200px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 511.999 511.999" xml:space="preserve" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M497.335,284.567L272.36,59.593c-3.135-3.135-7.386-4.897-11.82-4.897c-0.018,0-0.036,0-0.053,0l-117.811,0.379 c-4.414,0.014-8.645,1.774-11.766,4.897L107.261,83.62L28.537,4.896c-6.527-6.527-17.112-6.527-23.641,0s-6.528,17.112,0,23.641 L83.62,107.26l-23.648,23.649c-3.135,3.135-4.897,7.388-4.897,11.821l0.009,118.2c0,4.433,1.762,8.685,4.897,11.819 l224.586,224.586c9.776,9.776,22.619,14.665,35.462,14.665c12.843,0,25.685-4.889,35.461-14.665l141.845-141.845 C516.887,335.936,516.887,304.12,497.335,284.567z M473.694,331.848L331.849,473.693c-6.518,6.517-17.123,6.517-23.642,0 l-219.69-219.69L88.51,149.653l18.752-18.752l25.128,25.128c-14.998,25.333-11.942,58.981,10.333,81.256 c26.07,26.071,68.49,26.072,94.564,0c26.131-26.133,26.136-68.428,0-94.564c-22.197-22.199-55.836-25.383-81.256-10.333 l-25.128-25.128l18.774-18.774l103.962-0.335l220.055,220.056C480.211,314.726,480.211,325.33,473.694,331.848z M187.343,163.701 l-5.997-5.997c11.101-2.957,23.47-0.172,32.299,8.658c13.066,13.066,13.067,34.213,0,47.282 c-13.034,13.033-34.246,13.036-47.281,0c-8.79-8.791-11.629-21.143-8.658-32.3l5.997,5.997c6.528,6.528,17.112,6.528,23.641,0 C193.871,180.815,193.871,170.23,187.343,163.701z"></path> </g> </g> <g> <g> <path d="M355.49,379.131l-94.564-94.564c-6.527-6.527-17.112-6.527-23.641,0s-6.528,17.112,0,23.641l94.564,94.564 c6.528,6.528,17.112,6.528,23.641,0C362.018,396.244,362.018,385.659,355.49,379.131z"></path> </g> </g> <g> <g> <path d="M402.771,331.849l-94.564-94.564c-6.527-6.527-17.112-6.527-23.641,0c-6.528,6.527-6.528,17.112,0,23.641l94.564,94.564 c6.528,6.528,17.112,6.528,23.641,0C409.299,348.963,409.299,338.378,402.771,331.849z"></path> </g> </g> </g></svg>
+                        </div>
+                        <div class="flex-grow grid grid-custom gap-8 items-center ml-8">
+                            <div class="flex">
+                                <span class="mr-2">Név:</span>
+                                <span>@field.Name</span>
+                            </div>
+                            <div class="flex">
+                                <span class="mr-2">Típus:</span>
+                                <span>@field.Type</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+
+            </div>
         } else if (Model.IsMapping) {
             var mapping = Model.Mapping;
             
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold text-green-500">@mapping?.RelativePath</h3>
-                <h3 class="text-xl font-semibold text-green-500">@mapping?.ParentId</h3>
-                <h3 class="text-xl font-semibold text-green-500">@mapping?.ParentEntitysName</h3>
-                <h3 class="text-xl font-semibold text-yellow-500">@mapping?.Code</h3>
+            <p class="text-xl font-semibold text-slate-300 mb-4">Entity neve: <span class="text-white">@mapping?.ParentEntitysName</span></p>
+            <div>
+                <h4 class="text-xl font-sembibold mb-2">Mapping kódja:</h4>
+                <pre class="text-lg p-4 bg-slate-900 text-slate-200 rounded mx-8 shadow-inner">@mapping?.Code</pre>
             </div>
         }
         else {
