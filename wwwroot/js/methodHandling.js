@@ -31,37 +31,77 @@ async function deleteMethod(methodId) {
         }
     }
 }
+// Segédfüggvény a modal alapértelmezett értékeinek beállításához
+function configureModal({ title, buttonText, methodId = '', name = '', status = 'new', description = '', code = '' }) {
+    const modal = document.querySelector('#createMethodFlyIn');
+    modal.classList.remove('hidden');
+    console.log(status)
+    document.querySelector('#modalTitle').innerText = title;
+    document.querySelector('#saveMethodButton').innerText = buttonText;
+    document.querySelector('#methodId').value = methodId;
+    document.querySelector('#methodName').value = name;
+    document.querySelector('#newMethodStatus').value = status.toLowerCase();
+    document.querySelector('#description').value = description;
+    document.querySelector('#methodCode').value = code;
+}
+
+// Függvény az új metódus létrehozására
 function showCreateMethodForm() {
-    document.getElementById('modalTitle').innerText = "Create New Method";
-    document.getElementById('saveMethodButton').innerText = "Create";
-    document.getElementById('methodId').value = "";
-    document.getElementById('methodName').value = "";
-    document.getElementById('newMethodStatus').value = "New";
-    document.getElementById('methodCode').value = "";
-    document.getElementById('description').value = "";
-    document.getElementById('createMethodFlyIn').classList.remove('hidden');
+    configureModal({
+        title: 'Create New Method',
+        buttonText: 'Create',
+    });
 }
-function showEditMethodForm(id, name, status, code, description) {
-    document.getElementById('modalTitle').innerText = "Edit Method";
-    document.getElementById('saveMethodButton').innerText = "Save";
-    document.getElementById('methodId').value = id;
-    document.getElementById('methodName').value = name;
-    document.getElementById('newMethodStatus').value = status;
-    document.getElementById('methodCode').value = code;
-    document.getElementById('description').value = description;
-    document.getElementById('createMethodFlyIn').classList.remove('hidden');
+
+// Függvény egy meglévő metódus szerkesztésére
+async function showEditMethodForm(id, name, status, description) {
+    try {
+        // AJAX hívás a metódus kódjának lekéréséhez
+        const response = await fetch(`/ClassTree/GetMethodCode/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch method code: ${response.statusText}`);
+        }
+
+        // A válasz JSON-ként történő feldolgozása
+        const data = await response.json();
+
+        // Modal konfigurálása a lekért kóddal
+        configureModal({
+            title: 'Edit Method',
+            buttonText: 'Save',
+            methodId: id,
+            name: name,
+            status: status,
+            description: description,
+            code: data.code // A lekért metóduskód beállítása
+        });
+    } catch (error) {
+        console.error('Error fetching method code:', error);
+        alert('An error occurred while trying to fetch the method code.');
+    }
 }
+
+// Modal bezárása
 function closeCreateMethodForm() {
-    document.getElementById('createMethodFlyIn').classList.add('hidden');
+    document.querySelector('#createMethodFlyIn').classList.add('hidden');
 }
+
+// Metódus mentése
 async function createMethod() {
-    const methodId = document.getElementById('methodId').value;
-    const methodName = document.getElementById('methodName').value;
-    const status = document.getElementById('newMethodStatus').value;
-    const description = document.getElementById('description').value;
-    const methodCode = document.getElementById('methodCode').value;
-    const fileId = document.getElementById('fileId').value;
-    const token = document.getElementById('antiForgeryToken').value;
+    const methodId = document.querySelector('#methodId').value;
+    const methodName = document.querySelector('#methodName').value;
+    const status = document.querySelector('#newMethodStatus').value;
+    const description = document.querySelector('#description').value;
+    const code = document.querySelector('#methodCode').value;
+    const fileId = document.querySelector('#fileId').value;
+    const token = document.querySelector('#antiForgeryToken').value;
+
     const url = methodId ? `/ClassTree/EditMethod/${methodId}` : '/ClassTree/CreateMethod';
     const method = methodId ? 'PUT' : 'POST';
 
@@ -76,22 +116,29 @@ async function createMethod() {
                 name: methodName,
                 description: description,
                 status: status,
-                code: methodCode,
+                code: code,
                 fileId: fileId
             })
         });
 
         if (!response.ok) {
             const errorText = await response.text();
-            alert(`Failed to create method: ${errorText}`);
+            alert(`Failed to save method: ${errorText}`);
+            return;
         }
+        location.reload()
     } catch (error) {
-        console.error('Error creating method:', error);
-        alert('An error occurred while trying to create the method.');
+        console.error('Error saving method:', error);
+        alert('An error occurred while trying to save the method.');
     } finally {
-        closeCreateMethodForm(); // Close the fly-in after creating the method
+        closeCreateMethodForm();
     }
 }
+
+// Eseményfigyelők hozzáadása a gombokhoz
+document.querySelector('#saveMethodButton').addEventListener('click', createMethod);
+document.querySelector('#cancelMethodButton').addEventListener('click', closeCreateMethodForm);
+
 
 function refreshContent() {
     const fileId = document.getElementById("fileId").value;

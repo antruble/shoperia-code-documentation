@@ -12,7 +12,7 @@ namespace ShoperiaDocumentation.Services
         Task<int> GetFolderIdByNameAndParentIdAsync(string name, int? parentId);
         Task<FolderHierarchyViewModel> GetFolderHierarchyFromPathAsync(string path);
         Task<int?> GetDeepestParentIdAsync(string path);
-        Task<FileContentViewModel> GetFileContentAsync(int fileId, bool isEntity = false, bool isMapping = false);
+        Task<FileContentViewModel> GetFileContentAsync(int fileId, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false);
         
         #region FOLDER CREATE/RENAME/DELETE
         Task<int?> CreateFolderAsync(string name, string status, int? parentId, ClaimsPrincipal user);
@@ -21,7 +21,7 @@ namespace ShoperiaDocumentation.Services
         #endregion
         
         #region FILE CREATE/RENAME/DELETE
-        Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false);
+        Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false);
         Task<bool> DeleteFileAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion
@@ -31,6 +31,7 @@ namespace ShoperiaDocumentation.Services
         Task<bool> CreateOrUpdateMethodAsync(int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user);
         Task<bool> UpdateMethodAsync(int methodId, int fileId, string methodName, string? description, string? methodCode, string methodStatus, ClaimsPrincipal user);
         Task<bool> DeleteMethodAsync(int methodId, ClaimsPrincipal user);
+        Task<string?> GetMethodCodeAsync(int methodId);
         #endregion
         
         #region FIELD

@@ -39,29 +39,29 @@
                 <input type="hidden" id="methodId" name="__MethodId" />
 
                 <h3 class="text-xl font-bold mb-4" id="modalTitle">Create New Method</h3>
+        
                 <label for="methodName" class="block text-sm font-medium text-gray-700">Method Name</label>
-                <input type="text" id="methodName" class="w-full mt-2 mb-4 p-2 border rounded-md" placeholder="Enter method name">
+                <input type="text" id="methodName" class="w-full mt-2 mb-4 p-2 border rounded-md" placeholder="Enter method name" />
 
-                <select id="newMethodStatus" class="ml-2 text-black">
-                    <option value="New">New</option>
-                    <option value="Modified">Modified</option>
+                <label for="newMethodStatus" class="block text-sm font-medium text-gray-700">Status</label>
+                <select id="newMethodStatus" class="w-full mt-2 mb-4 p-2 border rounded-md">
+                    <option value="new">New</option>
+                    <option value="modified">Modified</option>
                 </select>
 
-                <label class="block text-sm font-medium text-gray-700">Description</label>
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
                 <textarea id="description" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method description"></textarea>
-
+                
                 <label for="methodCode" class="block text-sm font-medium text-gray-700">Code</label>
                 <textarea id="methodCode" class="w-full mt-2 mb-4 p-2 border rounded-md" rows="5" placeholder="Enter method code"></textarea>
 
                 <div class="flex justify-end">
-                    <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" id="saveMethodButton"
-                            onclick="createMethod().then(() => refreshContent()).catch(error => console.error('Error:', error))">
-                        Create
-                    </button>
-                    <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="closeCreateMethodForm()">Cancel</button>
+                    <button class="bg-green-500 text-white px-4 py-2 rounded mr-2" id="saveMethodButton">Create</button>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded" id="cancelMethodButton">Cancel</button>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 

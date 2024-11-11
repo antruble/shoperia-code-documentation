@@ -171,6 +171,11 @@ namespace ShoperiaDocumentation
                 pattern: "ClassTree/DeleteMethod/{id}",
                 defaults: new { controller = "ClassTree", action = "DeleteMethod" });
 
+            app.MapControllerRoute(
+                name: "classtree-get-method-code",
+                pattern: "ClassTree/GetMethodCode/{id}",
+                defaults: new { controller = "ClassTree", action = "GetMethodCode" });
+
             //API
             app.MapControllerRoute(
                 name: "api-jsonupload",
@@ -186,6 +191,12 @@ namespace ShoperiaDocumentation
                 name: "api-processjsondata",
                 pattern: "api/Api/ProcessJsonData",
                 defaults: new { controller = "Api", action = "ProcessJsonData" });
+            //  -   FIELD EDIT
+            app.MapControllerRoute(
+                name: "api-update-field",
+                pattern: "api/UpdateField",
+                defaults: new { controller = "Api", action = "UpdateField" });
+            
 
             // default routing
             app.MapControllerRoute(

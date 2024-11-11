@@ -97,7 +97,7 @@ namespace ShoperiaDocumentation.Services
                     continue;
                 }
                 var status = entity.IsNew ? "new" : "modified";
-                int? fileId = await _fileService.CreateFileAsync(fileName, status, parentId, user, isEntity: true);
+                int? fileId = await _fileService.CreateFileAsync(fileName, status, parentId, user, isEntity: true, isDatabaseEntity: entity.IsDatabaseEntity);
                 if (fileId == null)
                 {
                     _logger.LogError($"Something went wrong while tried to create the entity with the {entityPath} path");
@@ -209,6 +209,9 @@ namespace ShoperiaDocumentation.Services
             [JsonProperty("IsNew")]
             public bool IsNew { get; set; } // "New" or "Modified"
 
+            [JsonProperty("IsDatabaseEntity")]
+            public bool IsDatabaseEntity { get; set; }
+
             [JsonProperty("Fiels")]
             public List<FieldData>? Fields{ get; set; }
 
@@ -223,6 +226,9 @@ namespace ShoperiaDocumentation.Services
 
             [JsonProperty("Type")]
             public required string Type { get; set; }
+
+            [JsonProperty("Description")]
+            public required string Description { get; set; } = string.Empty;
 
             [JsonProperty("IsNullable")]
             public bool IsNullable{ get; set; }

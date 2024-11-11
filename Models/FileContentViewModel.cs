@@ -7,6 +7,7 @@
         public required string RelativePath { get; set; }
         public required bool IsNew { get; set; }
         public bool IsEntity { get; set; } = false;
+        public bool IsDatabaseEntity { get; set; } = false;
         public bool IsMapping { get; set; } = false;
         public IEnumerable<MethodModel> Methods { get; set; } = Enumerable.Empty<MethodModel>();
         public IEnumerable<FieldModel> Fields { get; set; } = Enumerable.Empty<FieldModel>();

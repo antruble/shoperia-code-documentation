@@ -77,7 +77,7 @@ namespace ShoperiaDocumentation.Services
             var folder = await _context.Folders.FirstOrDefaultAsync(f => f.Name == name && f.ParentId == parentId);
             if (folder == null)
             {
-                return -1; // Vagy használhatsz Nullable<int> típust és null-t adhatsz vissza
+                return -1; 
             }
             return folder.Id;
         }
@@ -95,7 +95,7 @@ namespace ShoperiaDocumentation.Services
 
             return parentId;
         }
-        public async Task<FileContentViewModel> GetFileContentAsync(int fileId, bool isEntity = false, bool isMapping = false)
+        public async Task<FileContentViewModel> GetFileContentAsync(int fileId, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false)
         {
             FileModel? file;
             FileContentViewModel? responseModel;
@@ -113,7 +113,8 @@ namespace ShoperiaDocumentation.Services
                     RelativePath = relativePath,
                     Fields = file.Fields,
                     IsNew = file.Status == "new",
-                    IsEntity = true
+                    IsEntity = true,
+                    IsDatabaseEntity = isDatabaseEntity,
                 };
             }
             else if (isMapping)
@@ -317,7 +318,7 @@ namespace ShoperiaDocumentation.Services
         }
         #endregion
         #region FILE CREATE/RENAME/DELETE
-        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false)
+        public async Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false)
         {
             if (!user.IsInRole("Admin"))
             {
@@ -335,9 +336,13 @@ namespace ShoperiaDocumentation.Services
             if (nameAlreadyExist)
             {
                 var file = await _context.Files.FirstOrDefaultAsync(f => f.Name == name && f.ParentId == parentId);
-                if (isEntity && !file.IsEntity)
+                if (isEntity)
                 {
-                    file.IsEntity = true;
+                    if (!file.IsEntity)
+                        file.IsEntity = true;
+                    if (file.IsDatabaseEntity != isDatabaseEntity)
+                        file.IsDatabaseEntity = isDatabaseEntity;
+                    
                     try
                     {
                         _context.Files.Update(file);
@@ -345,7 +350,7 @@ namespace ShoperiaDocumentation.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning("Failed to update {FileName} file while tried to update isEntity to true: {ex}", name, ex.Message);
+                        _logger.LogWarning("Failed to update {FileName} file while tried to update isEntity or isDatabaseEntity: {ex}", name, ex.Message);
                     }
                 }
                 _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", name);
@@ -361,6 +366,7 @@ namespace ShoperiaDocumentation.Services
                     ParentId = parentId,
                     Status = status,
                     IsEntity = isEntity,
+                    IsDatabaseEntity = isDatabaseEntity,
                     IsMapping = isMapping,
                 };
 
@@ -697,7 +703,33 @@ namespace ShoperiaDocumentation.Services
                 }
             }
         }
+        public async Task<string?> GetMethodCodeAsync(int methodId)
+        {
 
+            if (methodId < 0)
+            {
+                _logger.LogWarning("Invalid method ID {MethodId} provided for getting.", methodId);
+                return null;
+            }
+            try
+            {
+                // Metódus lekérdezése az adatbázisból
+                var method = await _context.Methods.FindAsync(methodId);
+                if (method == null)
+                {
+                    _logger.LogWarning("Method with ID {MethodId} not found .", methodId);
+                    return null;
+                }
+                // Visszaadjuk a metóduskódot
+                return method.FullCode;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving method code for method ID {MethodId}}.", methodId);
+                return null;
+            }
+        }
         #endregion
         #region FIELD CRUD
         public async Task<bool> CreateOrUpdateFieldAsync(int fileId, FieldData field, ClaimsPrincipal user)
@@ -758,6 +790,7 @@ namespace ShoperiaDocumentation.Services
                     FileId = fileId,
                     FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
                     Type = field.Type,
+                    Description = field.Description,
                     Comment = field.Comment,
                     DefaultValue = field.DefaultValue,
                     IsNullable = field.IsNullable,
@@ -803,7 +836,6 @@ namespace ShoperiaDocumentation.Services
                 _logger.LogWarning("Attempted to update field with an invalid name by user {UserName}.", user.Identity?.Name);
                 return false;
             }
-
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -824,12 +856,13 @@ namespace ShoperiaDocumentation.Services
 
                 // Update the field's datas
                 existingField.Name = field.Name;
+                existingField.Description = field.Description;
+                existingField.Type = field.Type;
                 existingField.IsNullable = field.IsNullable;
                 existingField.DefaultValue = field.DefaultValue;
                 existingField.ForeignTable = field.ForeignTable;
                 existingField.IsForeignKey = field.IsForeignKey;
                 existingField.IsPrimaryKey = field.IsPrimaryKey;
-                 
 
                 _context.Fields.Update(existingField);
                 var result = await _context.SaveChangesAsync();

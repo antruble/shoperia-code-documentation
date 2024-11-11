@@ -152,3 +152,45 @@ async function createFolderOrFile(type) {
         alert(`An error occurred while trying to create the ${type}.`);
     }
 }
+
+// FIELD EDIT
+// Szerkesztési mód aktiválása
+function enableEditing(fileId, fieldId, currentDescription) {
+    const descriptionContainer = document.getElementById(`description-${fieldId}`);
+    descriptionContainer.innerHTML = `
+            <input type="text" id="input-${fieldId}" value="${currentDescription}" 
+                   class="border border-gray-300 rounded px-2 py-1 mr-2 flex-grow" style="color: black;"/>
+            <button class="px-2 py-1 bg-blue-500 text-white rounded" 
+                    onclick="saveDescription(${fileId}, ${fieldId})">
+                Mentés
+            </button>`;
+}
+
+// Leírás mentése
+function saveDescription(fileId, fieldId) {
+    const inputElement = document.getElementById(`input-${fieldId}`);
+    const description = inputElement.value;
+
+    const name = document.getElementById(`field-name-${fieldId}`).innerText;
+    const type = document.getElementById(`field-type-${fieldId}`).innerText;
+
+    console.log(JSON.stringify({
+        fieldId: fieldId,
+        name: name,
+        type: type,
+        description: description,
+        fileId: fileId
+    }));
+
+    // Visszaállítás normál nézetre
+    const descriptionContainer = document.getElementById(`description-${fieldId}`);
+    descriptionContainer.innerHTML = description;
+
+    fetch('/api/Api/UpdateField', { 
+         method: 'POST',
+         body: JSON.stringify({ fieldId: fieldId, name: name, type: type, description: description, fileId: fileId}),
+         headers: { 'Content-Type': 'application/json' }
+     }).then(response => {
+         if (!response.ok) throw new Error('Failed to save');
+     }).catch(error => console.error(error));
+}

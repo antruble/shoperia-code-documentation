@@ -25,20 +25,22 @@ document.addEventListener('DOMContentLoaded', async function () {
             const fileName = this.getAttribute('data-file-name');
             const isNew = this.getAttribute('data-is-new');
             const isEntity = this.getAttribute('data-is-entity');
+            const isDatabaseEntity = this.getAttribute('data-is-database-entity');
             const isMapping = this.getAttribute('data-is-mapping');
 
             const isNewBool = isNew === "true" || isNew === "True"; 
             const isEntityBool = isEntity === "true" || isEntity === "True"; 
+            const isDatabaseEntityBool = isDatabaseEntity === "true" || isDatabaseEntity === "True"; 
             const isMappingBool = isMapping === "true" || isMapping === "True"; 
 
-            await openFile({ id: fileId, name: fileName, isNew: isNewBool, isEntity: isEntityBool, isMapping: isMappingBool });
+            await openFile({ id: fileId, name: fileName, isNew: isNewBool, isEntity: isEntityBool, isMapping: isMappingBool, isDatabaseEntity: isDatabaseEntity });
         });
     });
 });
-async function fetchFileContent(fileId, isEntity, isMapping) {
+async function fetchFileContent(fileId, isEntity, isMapping, isDatabaseEntity) {
     try {
         //console.log(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`)
-        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}`);
+        const response = await fetch(`/ClassTree/GetFileContent?fileId=${fileId}&isEntity=${isEntity}&isMapping=${isMapping}&isDatabaseEntity=${isDatabaseEntity}`);
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -125,16 +127,16 @@ async function selectTab(file) {
                 tab.classList.remove('active-tab');
             }
         });
-        await loadContent(file.id, file.isEntity, file.isMapping);
+        await loadContent(file.id, file.isEntity, file.isMapping, file.isDatabaseEntity);
         // set the hidden inputs data for method creation
         document.getElementById('fileId').value = file.id;
         const methodId = document.getElementById('methodId');
     }
 }
-async function loadContent(fileId, isEntity = false, isMapping = false) {    
+async function loadContent(fileId, isEntity = false, isMapping = false, isDatabaseEntity = false) {    
     // fetch the data
     //console.log(fileId)
-    const data = await fetchFileContent(fileId, isEntity, isMapping);
+    const data = await fetchFileContent(fileId, isEntity, isMapping, isDatabaseEntity);
     if (data !== null) {
         const modalContent = document.getElementById('modalContent');
         modalContent.innerHTML = `${data}`;

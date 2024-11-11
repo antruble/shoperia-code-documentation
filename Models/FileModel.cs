@@ -18,6 +18,7 @@ namespace ShoperiaDocumentation.Models
         public int? ParentId { get; set; }
 
         public bool IsEntity { get; set; } = false;
+        public bool IsDatabaseEntity { get; set; } = false;
         public bool IsMapping { get; set; } = false;
 
 
@@ -42,11 +43,15 @@ namespace ShoperiaDocumentation.Models
 
         [Required]
         [StringLength(255)]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         [Required]
         [StringLength(255)]
-        public string Type { get; set; }
+        public required string Type { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public required string Description { get; set; } = string.Empty;
 
         public bool IsNullable { get; set; } = false;      // Null megengedett
         public string? DefaultValue { get; set; }          // Alapértelmezett érték

@@ -39,11 +39,11 @@ namespace ShoperiaDocumentation.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetFileContent(int fileId, bool isEntity = false, bool isMapping = false)
+        public async Task<IActionResult> GetFileContent(int fileId, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false)
         {
             try
             {
-                var fileContent = await _fileService.GetFileContentAsync(fileId, isEntity: isEntity, isMapping: isMapping);
+                var fileContent = await _fileService.GetFileContentAsync(fileId, isEntity: isEntity, isMapping: isMapping, isDatabaseEntity: isDatabaseEntity);
                 return PartialView("_FileContentModalPartial", fileContent);
             }
             catch (Exception ex)
@@ -136,6 +136,7 @@ namespace ShoperiaDocumentation.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditMethod(int id, [FromBody] CreateMethodRequest request)
         {
+            _logger.LogInformation($"request.FileId: {request.FileId} request.Name: {request.Name} request.Description: {request.Description} request.Code: {request.Code} request.Status: {request.Status}");
             bool success = await _fileService.UpdateMethodAsync(id, request.FileId, request.Name, request.Description, request.Code, request.Status, User);
             if (success)
             {
@@ -159,6 +160,20 @@ namespace ShoperiaDocumentation.Controllers
             else
             {
                 return BadRequest("Failed to update method.");
+            }
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> GetMethodCode(int id)
+        {
+            var result = await _fileService.GetMethodCodeAsync(id);
+            if (result != null)
+            {
+                return Ok(new { code = result }); // A kódot JSON objektumként adja vissza
+            }
+            else
+            {
+                return BadRequest("Failed to get method code.");
             }
         }
 

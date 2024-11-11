@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using ShoperiaDocumentation.Models.Requests;
 using ShoperiaDocumentation.Services;
 using System.IO;
 using System.Reflection.Metadata.Ecma335;
@@ -61,7 +62,7 @@ namespace ShoperiaDocumentation.Controllers
             {
                 return BadRequest("Invalid or empty JSON data.");
             }
-
+            _logger.LogInformation($"Beérkező ProcessDatabaseEntities hívás");
             try
             {
                 await _fileProcessingService.ProcessDatabaseJsonAsync(JsonConvert.SerializeObject(jsonData), User);
@@ -94,5 +95,35 @@ namespace ShoperiaDocumentation.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
             }
         }
+
+        [HttpPost("UpdateField")]
+        public async Task<IActionResult> UpdateField([FromBody] UpdateFieldRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            try
+            {
+                // Frissítsük az adott mezőt
+                var fieldData = new FileProcessingService.FieldData { Description = request.Description, Name = request.Name, Type = request.Type };
+                var isUpdated = await _fileService.UpdateFieldAsync(request.FileId, request.FieldId, fieldData, User);
+
+                if (!isUpdated)
+                {
+                    return NotFound($"Field with ID {request.FieldId} not found.");
+                }
+
+                _logger.LogInformation($"Field description updated successfully for Field ID: {request.FieldId}.");
+                return Ok(new { message = "Field description updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while updating field description.");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 }

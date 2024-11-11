@@ -25,7 +25,7 @@ namespace ShoperiaDocumentation.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            // Valós hitelesítés (pl. az adatbázisból)
+            //// Valós hitelesítés (pl. az adatbázisból)
             if (login.Username == "admin" && login.Password == "admin")
             {
                 var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
