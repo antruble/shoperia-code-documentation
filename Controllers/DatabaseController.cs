@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ShoperiaDocumentation.Models.Requests;
+using ShoperiaDocumentation.Models.ViewModels;
 using ShoperiaDocumentation.Services;
 
 namespace ShoperiaDocumentation.Controllers
@@ -25,7 +27,7 @@ namespace ShoperiaDocumentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetEntityDetails(int id)
+        public async Task<IActionResult> GetEntityPartial(int id)
         {
             var entity = await _fileService.GetDatabaseEntityById(id);
 
@@ -34,15 +36,51 @@ namespace ShoperiaDocumentation.Controllers
                 return NotFound(new { message = "Entity not found" });
             }
 
-            // JSON válasz
-            return Ok(new
+            var model = new EntityViewModel
             {
-                id = entity.Id,
-                name = entity.Name,
-                isNew = entity.Status.ToLower() == "new",
-                fields = entity.Fields
-            });
+                Id = entity.Id,
+                Name = entity.Name,
+                Description = /*entity.Description*/ "DESC",
+                Fields = entity.Fields.Select(f => new FieldViewModel
+                {
+                    Id = f.Id,
+                    Name = f.Name,
+                    Type = f.Type,
+                    Description = f.Description
+                }).ToList()
+            };
+
+            return PartialView("_EntityContentPartial", model);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UpdateDatabaseEntity([FromBody] UpdateEntityRequest request)
+        {
+            if (request == null || request.Id <= 0)
+            {
+                return BadRequest("Invalid entity data.");
+            }
+
+            var entity = await _fileService.GetDatabaseEntityById(request.Id);
+            if (entity == null)
+            {
+                return NotFound("Entity not found.");
+            }
+
+            // Frissítsük az entitás leírását
+            //entity.Description = request.Description;
+
+            // Frissítsük a mezők leírásait
+            foreach (var updatedField in request.Fields)
+            {
+                var field = entity.Fields.FirstOrDefault(f => f.Name == updatedField.Name);
+                if (field != null)
+                {
+                    field.Description = updatedField.Description;
+                }
+            }
+            await _fileService.UpdateDatabaseEntityAsync(request.Id, entity);
+            return Ok();
+        }
     }
 }

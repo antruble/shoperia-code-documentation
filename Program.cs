@@ -47,7 +47,11 @@ namespace ShoperiaDocumentation
             })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                options.JsonSerializerOptions.WriteIndented = true; // Olvashatóbb JSON
+            });
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder =>
@@ -200,8 +204,13 @@ namespace ShoperiaDocumentation
             // DATABASE
             app.MapControllerRoute(
                 name: "database-get-entity",
-                pattern: "/database/entities/{entityId}",
-                defaults: new { controller = "Database", action = "GetEntityDetails" });
+                pattern: "database/GetEntityPartial/{id}",
+                defaults: new { controller = "Database", action = "GetEntityPartial" });
+            
+            app.MapControllerRoute(
+                name: "database-update-entity",
+                pattern: "database/entity/update",
+                defaults: new { controller = "Database", action = "UpdateDatabaseEntity" });
 
             // default routing
             app.MapControllerRoute(

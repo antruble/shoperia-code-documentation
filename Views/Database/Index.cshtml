@@ -11,9 +11,80 @@
 
 @await Html.PartialAsync("_SideMenuPartial", Model)
 
-<div id="entity-details" class="w-4/5 bg-custom-light text-white p-4 overflow-y-auto">
-    <h2 class="text-2xl font-bold">Entity Details</h2>
-    <div id="entity-data" class="mt-4">
+<div id="entity-details" class="w-4/5 p-4 overflow-y-auto">
+    <div id="entity-data" class="pt-4 px-16">
         <!-- Az entitás adatai itt jelennek meg -->
     </div>
 </div>
+
+<script>
+    const testFn = (id) => {
+        console.log(id)
+        const editButton = document.getElementById('edit-button');
+        const saveButton = document.getElementById('save-button');
+
+        const descriptionView = document.getElementById('description-view');
+        const descriptionEditor = document.getElementById('description-editor');
+
+        const fieldDescriptionsView = document.querySelectorAll('.field-description-view');
+        const fieldDescriptionsEditor = document.querySelectorAll('.field-description-editor');
+
+        descriptionView.classList.add('hidden');
+        descriptionEditor.classList.remove('hidden');
+
+        // Mezők átváltása szerkesztési módra
+        fieldDescriptionsView.forEach((view) => view.classList.add('hidden'));
+        fieldDescriptionsEditor.forEach((editor) => editor.classList.remove('hidden'));
+
+        // Gombok frissítése
+        editButton.classList.add('hidden');
+        saveButton.classList.remove('hidden');
+
+        // Szerkesztések mentése
+        saveButton.addEventListener('click', async () => {
+            const updatedDescription = descriptionEditor.value;
+
+            const updatedFields = Array.from(fieldDescriptionsEditor).map((editor) => ({
+                name: editor.closest('tr').children[0].textContent.trim(), // Field name
+                description: editor.value // Updated description
+            }));
+
+            try {
+                const response = await fetch('database/entity/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        description: updatedDescription,
+                        fields: updatedFields
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save changes.');
+                }
+
+                // Visszatérés megtekintési módhoz
+                descriptionView.textContent = updatedDescription;
+                descriptionView.classList.remove('hidden');
+                descriptionEditor.classList.add('hidden');
+
+                fieldDescriptionsView.forEach((view, index) => {
+                    view.textContent = updatedFields[index].description;
+                    view.classList.remove('hidden');
+                });
+                fieldDescriptionsEditor.forEach((editor) => editor.classList.add('hidden'));
+
+                // Gombok frissítése
+                saveButton.classList.add('hidden');
+                editButton.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                alert('Failed to save changes.');
+            }
+        });
+    }
+
+</script>

@@ -789,7 +789,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     Name = field.Name,
                     FileId = fileId,
-                    //FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
+                    FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
                     Type = field.Type,
                     Description = field.Description,
                     Comment = field.Comment,
@@ -1274,7 +1274,7 @@ namespace ShoperiaDocumentation.Services
                 // Get database entitites
                 var entity = await _context.Files
                     .Include(f => f.Fields)
-                    .FirstOrDefaultAsync(f => f.IsDatabaseEntity);
+                    .FirstOrDefaultAsync(f => f.IsDatabaseEntity && f.Id == id);
 
                 return entity;
             }
@@ -1285,6 +1285,59 @@ namespace ShoperiaDocumentation.Services
                 throw; // A hibát továbbra is feldobjuk, hogy a hívó kezelhesse
             }
         }
+        public async Task UpdateDatabaseEntityAsync(int id, FileModel entity)
+        {
+            // Keresd meg az entitást az adatbázisban
+            var existingEntity = await _context.Files.Include(f => f.Fields)
+                                                     .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (existingEntity == null)
+            {
+                throw new ArgumentException($"Entity with ID {id} not found.");
+            }
+
+            // Frissítsd az alapvető mezőket
+            //existingEntity.Name = entity.Name;
+            //existingEntity.Description = entity.Description;
+            //existingEntity.Status = entity.Status;
+
+            // Frissítsd a mezőket
+            foreach (var updatedField in entity.Fields)
+            {
+                var existingField = existingEntity.Fields.FirstOrDefault(f => f.Id == updatedField.Id);
+
+                if (existingField != null)
+                {
+                    // Ha a mező létezik, frissítsd az értékeket
+                    //existingField.Name = updatedField.Name;
+                    //existingField.Type = updatedField.Type;
+                    existingField.Description = updatedField.Description;
+                    //existingField.IsNullable = updatedField.IsNullable;
+                    //existingField.DefaultValue = updatedField.DefaultValue;
+                    //existingField.Comment = updatedField.Comment;
+                    //existingField.IsPrimaryKey = updatedField.IsPrimaryKey;
+                    //existingField.IsForeignKey = updatedField.IsForeignKey;
+                    //existingField.ForeignTable = updatedField.ForeignTable;
+                }
+                else
+                {
+                    // Ha a mező nem létezik, add hozzá
+                    existingEntity.Fields.Add(updatedField);
+                }
+            }
+
+            // Távolítsd el azokat a mezőket, amelyek nincsenek az új entitásban
+            var updatedFieldIds = entity.Fields.Select(f => f.Id).ToList();
+            var fieldsToRemove = existingEntity.Fields.Where(f => !updatedFieldIds.Contains(f.Id)).ToList();
+            foreach (var field in fieldsToRemove)
+            {
+                existingEntity.Fields.Remove(field);
+            }
+
+            // Mentés az adatbázisba
+            await _context.SaveChangesAsync();
+        }
+
         #endregion
     }
 }

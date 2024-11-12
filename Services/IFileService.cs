@@ -63,6 +63,7 @@ namespace ShoperiaDocumentation.Services
 
         Task<DatabaseViewModel> GetDatabaseViewModelAsync();
         Task<FileModel?> GetDatabaseEntityById(int id);
+        Task UpdateDatabaseEntityAsync(int id, FileModel entity);
         #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ShoperiaDocumentation.Models
 {
@@ -39,7 +40,8 @@ namespace ShoperiaDocumentation.Models
         [ForeignKey("FileModel")]
         public required int FileId { get; set; }
         // Navigációs tulajdonság a kapcsolódó fájlhoz
-        //public virtual required FileModel FileModel { get; set; }
+        [JsonIgnore]
+        public virtual FileModel FileModel { get; set; }
 
         [Required]
         [StringLength(255)]

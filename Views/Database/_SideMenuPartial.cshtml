@@ -1,44 +1,75 @@
 ﻿@model ShoperiaDocumentation.Models.ViewModels.DatabaseViewModel
 
+<style>
+    .menu-entity:nth-child(odd) {
+        background-color: white;
+    }
+
+    .menu-entity:nth-child(even) {
+        background-color: rgb(209 213 219); /* bg-gray-300 */
+        background-color: white;
+     }
+    .menu-entity:hover{
+        background-color: #0D6EFD;
+    }
+
+    .highlighted {
+        font-weight: bold;
+        border-left: 4px solid #6366f1; 
+    }
+
+</style>
 @{
 
 }
-<div class="w-1/5 pt-4 px-2 flex flex-col bg-indigo-950 text-slate-200 text-md" id="database-explorer">
-        <div class="relative pb-4">
-            <input type="text"
-                    id="searchBar"
-                    placeholder="Search..."
-                    class="w-full py-2 px-4 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-700 text-black"
-                    oninput="handleSearchInput(event)" />
-        </div>
-        <div class="flex flex-col gap-1 overflow-y-scroll ">
-            @if (Model != null && Model.Entities != null)
+<div class="w-1/5 pt-4 flex flex-col bg-gray-200  text-md" id="database-explorer">
+    <h1 class="flex w-full justify-center mb-4 font-bold text-gray-700 text-lg">
+        Adatbázis táblák
+    </h1>
+    <div class="relative pb-4 px-2">
+        <input type="text"
+                id="searchBar"
+                placeholder="Search..."
+                class="w-full py-2 px-4 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-700 text-black"
+                oninput="handleSearchInput(event)" />
+    </div>
+    <div class="flex flex-col gap-1 overflow-y-scroll px-2">
+        @if (Model != null && Model.Entities != null)
+        {
+            @foreach (var entity in Model.Entities)
             {
-                @foreach (var entity in Model.Entities)
-                {
-                <div class="menu-entity cursor-pointer hover:bg-indigo-700 px-2 py-1 rounded"
-                     data-entity-id="@entity.Id">
-                    @entity.Name
-                </div>
-                }
+            <div class="menu-entity cursor-pointer hover:bg-indigo-700 px-2 py-1 rounded"
+                    data-entity-id="@entity.Id">
+                @entity.Name
+            </div>
             }
-        </div>
+        }
+    </div>
 </div>
 
 
 <script>
+    let selectedEntity = null;
+
     const entityMenus = document.querySelectorAll('.menu-entity');
     const entityDetails = document.getElementById('entity-data');
 
     entityMenus.forEach((entity) => {
         entity.addEventListener('click', async () => {
+            if (selectedEntity) {
+                selectedEntity.classList.remove("highlighted");
+            }
+            // Az aktuális entitás kiemelése
+            entity.classList.add("highlighted");
+            selectedEntity = entity
+
             const entityId = entity.getAttribute('data-entity-id'); // Az entitás ID-ja
             try {
                 // AJAX hívás az entitás adataihoz
-                const response = await fetch(`/database/entities/${entityId}`, {
+                const response = await fetch(`/database/GetEntityPartial/${entityId}`, {
                     method: 'GET',
                     headers: {
-                        'Content-Type': 'application/json',
+                        "Content-Type": "text/html",
                     },
                 });
 
@@ -46,22 +77,14 @@
                     throw new Error('Failed to fetch entity details.');
                 }
 
-                const data = await response.json(); // JSON adat feldolgozása
+                const html = await response.text(); // Válasz HTML formában
+                const entityDetails = document.getElementById("entity-data");
 
-                console.log(data);
-                // Entitás adatok frissítése a megjelenítéshez
-                const entityDetails = document.getElementById('entity-data');
-                entityDetails.innerHTML = `
-                        <p><strong>Name:</strong> ${data.name}</p>
-                        <p><strong>Description:</strong> ${data.description || 'N/A'}</p>
-                        <p><strong>Fields:</strong></p>
-                        <ul>
-                            ${data.fields?.map(field => `<li>${field}</li>`).join('') || '<li>No fields available</li>'}
-                        </ul>
-                    `;
+                // Az új résznézet beillesztése
+                entityDetails.innerHTML = html;
             } catch (error) {
-                console.error('Error fetching entity details:', error);
-                alert('An error occurred while fetching the entity details.');
+                console.error("Error fetching entity partial:", error);
+                alert("An error occurred while fetching the entity details.");
             }
         });
     });
