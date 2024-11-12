@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using ShoperiaDocumentation.Models;
+using ShoperiaDocumentation.Models.ViewModels;
 using System.Security.Claims;
 using static ShoperiaDocumentation.Services.FileProcessingService;
 
@@ -57,5 +58,11 @@ namespace ShoperiaDocumentation.Services
 
         #endregion
 
+
+        #region DATABASE
+
+        Task<DatabaseViewModel> GetDatabaseViewModelAsync();
+        Task<FileModel?> GetDatabaseEntityById(int id);
+        #endregion
     }
 }

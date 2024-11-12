@@ -196,7 +196,12 @@ namespace ShoperiaDocumentation
                 name: "api-update-field",
                 pattern: "api/UpdateField",
                 defaults: new { controller = "Api", action = "UpdateField" });
-            
+
+            // DATABASE
+            app.MapControllerRoute(
+                name: "database-get-entity",
+                pattern: "/database/entities/{entityId}",
+                defaults: new { controller = "Database", action = "GetEntityDetails" });
 
             // default routing
             app.MapControllerRoute(

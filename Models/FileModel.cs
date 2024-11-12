@@ -39,7 +39,7 @@ namespace ShoperiaDocumentation.Models
         [ForeignKey("FileModel")]
         public required int FileId { get; set; }
         // Navigációs tulajdonság a kapcsolódó fájlhoz
-        public virtual required FileModel FileModel { get; set; }
+        //public virtual required FileModel FileModel { get; set; }
 
         [Required]
         [StringLength(255)]

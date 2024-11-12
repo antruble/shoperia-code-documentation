@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database</title>
+    <link href="~/css/output.css" rel="stylesheet" />
+    <link href="~/css/classtree.css" rel="stylesheet" />
+    <link href="~/css/scrollbars.css" rel="stylesheet" />
+
+</head>
+<body class="bg-custom-light text-white h-screen flex flex-col">
+    <header class="flex bg-custom-dark px-4" style="height: 5%;">
+        <nav class="flex flex-col w-11/12">
+            <h1>szia</h1>
+        </nav>
+    </header>
+
+    <main class="grow overflow-hidden flex">
+        @RenderBody()
+    </main>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
+</html>

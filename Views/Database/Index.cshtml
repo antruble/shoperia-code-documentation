@@ -1,0 +1,19 @@
+﻿@model ShoperiaDocumentation.Models.ViewModels.DatabaseViewModel
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+
+@{
+    Layout = "~/Views/Shared/_DatabaseLayout.cshtml";
+
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+@await Html.PartialAsync("_SideMenuPartial", Model)
+
+<div id="entity-details" class="w-4/5 bg-custom-light text-white p-4 overflow-y-auto">
+    <h2 class="text-2xl font-bold">Entity Details</h2>
+    <div id="entity-data" class="mt-4">
+        <!-- Az entitás adatai itt jelennek meg -->
+    </div>
+</div>

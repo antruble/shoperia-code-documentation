@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
+using ShoperiaDocumentation.Models.ViewModels;
 using System.IO;
 using System.Reflection;
 using System.Security.Claims;
@@ -788,7 +789,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     Name = field.Name,
                     FileId = fileId,
-                    FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
+                    //FileModel = await _context.Files.FindAsync(fileId) ?? throw new NullReferenceException($"Error while creating {field.Name} field model: filemodel can't be null"),
                     Type = field.Type,
                     Description = field.Description,
                     Comment = field.Comment,
@@ -1239,6 +1240,51 @@ namespace ShoperiaDocumentation.Services
             return fullPath;
         }
 
+        #endregion
+
+        #region DATABASE
+        public async Task<DatabaseViewModel> GetDatabaseViewModelAsync()
+        {
+            try
+            {
+                // Get database entitites
+                var databaseEntities = await _context.Files
+                    .Include(f => f.Fields)
+                    .Where(f => f.IsDatabaseEntity)
+                    .ToListAsync() 
+                    ?? new List<FileModel>();
+
+                return new DatabaseViewModel
+                {
+                    Entities = databaseEntities
+                };
+            }
+            catch (Exception ex)
+            {
+                // Hiba naplózása
+                _logger.LogError(ex, "Error while fetching database entities.");
+                throw; // A hibát továbbra is feldobjuk, hogy a hívó kezelhesse
+            }
+        }
+
+        public async Task<FileModel?> GetDatabaseEntityById(int id) 
+        {
+            try
+            {
+                // Get database entitites
+                var entity = await _context.Files
+                    .Include(f => f.Fields)
+                    .FirstOrDefaultAsync(f => f.IsDatabaseEntity);
+
+                return entity;
+            }
+            catch (Exception ex)
+            {
+                // Hiba naplózása
+                _logger.LogError(ex, "Error while fetching database entities.");
+                throw; // A hibát továbbra is feldobjuk, hogy a hívó kezelhesse
+            }
+        }
         #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace ShoperiaDocumentation.Models
+﻿namespace ShoperiaDocumentation.Models.ViewModels
 {
     public class FolderHierarchyViewModel
     {
