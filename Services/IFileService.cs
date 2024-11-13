@@ -23,6 +23,7 @@ namespace ShoperiaDocumentation.Services
         
         #region FILE CREATE/RENAME/DELETE
         Task<int?> CreateFileAsync(string name, string status, int parentId, ClaimsPrincipal user, bool isEntity = false, bool isMapping = false, bool isDatabaseEntity = false);
+        Task<int?> CreateFileAsync(FileModel file, ClaimsPrincipal user);
         Task<bool> DeleteFileAsync(int folderId, ClaimsPrincipal user);
         Task<bool> RenameFileAsync(int folderId, string newFolderName, ClaimsPrincipal user);
         #endregion

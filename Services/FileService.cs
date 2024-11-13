@@ -5,9 +5,11 @@ using Microsoft.IdentityModel.Tokens;
 using ShoperiaDocumentation.Data;
 using ShoperiaDocumentation.Models;
 using ShoperiaDocumentation.Models.ViewModels;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security.Claims;
+using System.Security.Principal;
 using static ShoperiaDocumentation.Services.FileProcessingService;
 using static System.Reflection.Metadata.Ecma335.MethodBodyStreamEncoder;
 
@@ -391,6 +393,85 @@ namespace ShoperiaDocumentation.Services
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", name, user.Identity?.Name);
+                return null;
+            }
+        }
+
+        public async Task<int?> CreateFileAsync(FileModel file, ClaimsPrincipal user)
+        {
+            if (!user.IsInRole("Admin"))
+            {
+                _logger.LogWarning("User {UserName} attempted to create file {FileName} without admin permissions.", user.Identity?.Name, file.Name);
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(file.Name) || string.IsNullOrWhiteSpace(file.Name))
+            {
+                _logger.LogWarning("Invalid file name {FileName} provided for creation by user {UserName}.", file.Name, user.Identity?.Name);
+                return null;
+            }
+
+            bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == file.ParentId && f.Name == file.Name);
+            if (nameAlreadyExist)
+            {
+                var existingFile = await _context.Files.FirstOrDefaultAsync(f => f.Name == file.Name && f.ParentId == file.ParentId);
+                if (file.IsEntity)
+                {
+                    if (!existingFile.IsEntity)
+                        existingFile.IsEntity = true;
+                    if (existingFile.IsDatabaseEntity != file.IsDatabaseEntity)
+                        existingFile.IsDatabaseEntity = file.IsDatabaseEntity;
+
+                    try
+                    {
+                        _context.Files.Update(existingFile);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning("Failed to update {FileName} file while tried to update isEntity or isDatabaseEntity: {ex}", file.Name, ex.Message);
+                    }
+                }
+                _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", file.Name);
+                return existingFile?.Id;
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var newFile = new FileModel
+                {
+                    Name = file.Name,
+                    Description = file.Description,
+                    ParentId = file.ParentId,
+                    Status = file.Status,
+                    IsEntity = file.IsEntity,
+                    IsDatabaseEntity = file.IsDatabaseEntity,
+                    IsMapping = file.IsMapping,
+
+
+                };
+
+                _context.Files.Add(newFile);
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    await transaction.CommitAsync();
+                    _logger.LogInformation("File {FileName} successfully created by user {UserName}.", file.Name, user.Identity?.Name);
+                    return newFile.Id;
+                }
+                else
+                {
+                    _logger.LogWarning("No changes detected while attempting to create file {FileName} by user {UserName}.", file.Name, user.Identity?.Name);
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "An error occurred while creating the file {FileName} by user {UserName}.", file.Name, user.Identity?.Name);
                 return null;
             }
         }
@@ -1298,7 +1379,8 @@ namespace ShoperiaDocumentation.Services
 
             // Frissítsd az alapvető mezőket
             //existingEntity.Name = entity.Name;
-            //existingEntity.Description = entity.Description;
+            existingEntity.Description = entity.Description;
+            _logger.LogInformation($"existingEntity.Description: {existingEntity.Description} entity.Description: {entity.Description}");
             //existingEntity.Status = entity.Status;
 
             // Frissítsd a mezőket
@@ -1333,9 +1415,17 @@ namespace ShoperiaDocumentation.Services
             {
                 existingEntity.Fields.Remove(field);
             }
-
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Changes saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving changes to the database.");
+                throw;
+            }
             // Mentés az adatbázisba
-            await _context.SaveChangesAsync();
         }
 
         #endregion

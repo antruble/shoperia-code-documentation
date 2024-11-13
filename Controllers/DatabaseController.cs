@@ -40,7 +40,7 @@ namespace ShoperiaDocumentation.Controllers
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                Description = /*entity.Description*/ "DESC",
+                Description = entity.Description,
                 Fields = entity.Fields.Select(f => new FieldViewModel
                 {
                     Id = f.Id,
@@ -56,6 +56,7 @@ namespace ShoperiaDocumentation.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateDatabaseEntity([FromBody] UpdateEntityRequest request)
         {
+            _logger.LogInformation($"rquest dsc {request.Description}");
             if (request == null || request.Id <= 0)
             {
                 return BadRequest("Invalid entity data.");
@@ -68,7 +69,7 @@ namespace ShoperiaDocumentation.Controllers
             }
 
             // Frissítsük az entitás leírását
-            //entity.Description = request.Description;
+            entity.Description = request.Description;
 
             // Frissítsük a mezők leírásait
             foreach (var updatedField in request.Fields)

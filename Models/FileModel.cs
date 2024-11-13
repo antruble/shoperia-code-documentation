@@ -8,6 +8,9 @@ namespace ShoperiaDocumentation.Models
     {
         [Key]
         public int Id { get; set; }
+        
+        [StringLength(255)]
+        public string Description { get; set; }
 
         [Required]
         [StringLength(255)]

@@ -18,12 +18,15 @@
         border-left: 4px solid #6366f1; 
     }
 
+    .field-row:nth-child(even) {
+        background-color: rgb(243 244 246);
+    }
+    
 </style>
-@{
 
-}
 <div class="w-1/5 pt-4 flex flex-col bg-gray-200  text-md" id="database-explorer">
-    <h1 class="flex w-full justify-center mb-4 font-bold text-gray-700 text-lg">
+    
+    <h1 class="flex w-full justify-center mb-4 font-bold text-gray-700 text-2xl">
         Adatbázis táblák
     </h1>
     <div class="relative pb-4 px-2">
@@ -45,23 +48,40 @@
             }
         }
     </div>
+    <div class="flex justify-center py-2">
+        <a href="@Url.Action("Index", "ClassTree")" class="hover:underline" style="color: #0D6EFD;">
+            Váltás az osztályfára...
+        </a>
+    </div>
 </div>
 
 
 <script>
-    let selectedEntity = null;
+    document.addEventListener('DOMContentLoaded', async () => {
+        const entityMenus = document.querySelectorAll('.menu-entity');
+        const entityDetails = document.getElementById('entity-data');
+        let selectedEntity = null;
 
-    const entityMenus = document.querySelectorAll('.menu-entity');
-    const entityDetails = document.getElementById('entity-data');
+        // Az első entitás betöltése
+        if (entityMenus.length > 0) {
+            await openDatabaseEntity(entityMenus[0]);
+        }
 
-    entityMenus.forEach((entity) => {
-        entity.addEventListener('click', async () => {
+        // Események hozzárendelése az entitásokhoz
+        entityMenus.forEach((entity) => {
+            entity.addEventListener('click', async () => {
+                await openDatabaseEntity(entity);
+            });
+        });
+
+        // Funkció az entitás részleteinek betöltésére
+        async function openDatabaseEntity(entity) {
             if (selectedEntity) {
                 selectedEntity.classList.remove("highlighted");
             }
             // Az aktuális entitás kiemelése
             entity.classList.add("highlighted");
-            selectedEntity = entity
+            selectedEntity = entity;
 
             const entityId = entity.getAttribute('data-entity-id'); // Az entitás ID-ja
             try {
@@ -86,29 +106,27 @@
                 console.error("Error fetching entity partial:", error);
                 alert("An error occurred while fetching the entity details.");
             }
-        });
+        }
+
+        // Keresés kezelése
+        function handleSearchInput(event) {
+            const query = event.target.value.toLowerCase();
+
+            entityMenus.forEach((item) => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block'; // Megjelenítés, ha illeszkedik
+                } else {
+                    item.style.display = 'none'; // Elrejtés, ha nem illeszkedik
+                }
+            });
+        }
+
+        // Keresés törlése
+        function clearSearch() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.value = ''; // Mező törlése
+            handleSearchInput({ target: searchBar }); // Frissítés üres szöveggel
+        }
     });
-    // Keresés kezelése
-    function handleSearchInput(event) {
-        const query = event.target.value.toLowerCase();
-
-        entityMenus.forEach((item) => {
-            const text = item.textContent.toLowerCase();
-            if (text.includes(query)) {
-                item.style.display = 'block'; // Megjelenítés, ha illeszkedik
-            } else {
-                item.style.display = 'none'; // Elrejtés, ha nem illeszkedik
-            }
-        });
-    }
-
-    // Keresés törlése
-    function clearSearch() {
-        const searchBar = document.getElementById('searchBar');
-        searchBar.value = ''; // Mező törlése
-        handleSearchInput({ target: searchBar }); // Frissítés üres szöveggel
-    }
-
-
 </script>
-

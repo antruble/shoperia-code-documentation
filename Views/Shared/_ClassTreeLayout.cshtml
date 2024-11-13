@@ -17,10 +17,17 @@
     <header class="flex bg-custom-dark px-4 " >
         <nav class="flex flex-col w-11/12">
             <div class="flex py-4">
-                <div class="flex items-baseline w-1/5">
-                    <span class="text-5xl font-bold">osztályfa</span>
-                    <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
-                    <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
+                <div class="flex flex-col items-baseline w-1/5">
+                    <div class="flex flex-row items-end">
+                        <span class="text-5xl font-bold">osztályfa</span>
+                        <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
+                        <span class="block circle w-4 h-4 border-2 border-white rounded-full ml-2"></span>
+                    </div>
+                    <div class="" style="margin-top:2px;">
+                        <a href="@Url.Action("Index", "Database")" class="text-blue-500 hover:underline">
+                            Adatbázis dokumentáció megnyitása...
+                        </a>
+                    </div>
                 </div>
                 <div class="flex-grow flex space-x-4 justify-around" id="mainCategoriesContainer">
                     @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
