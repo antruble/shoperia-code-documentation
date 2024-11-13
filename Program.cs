@@ -211,6 +211,17 @@ namespace ShoperiaDocumentation
                 name: "database-update-entity",
                 pattern: "database/entity/update",
                 defaults: new { controller = "Database", action = "UpdateDatabaseEntity" });
+            
+            // EXPORT
+            app.MapControllerRoute(
+                name: "export-files",
+                pattern: "export/files",
+                defaults: new { controller = "Home", action = "ExportDatabase" });
+            
+            app.MapControllerRoute(
+                name: "export-entities",
+                pattern: "export/entities",
+                defaults: new { controller = "Home", action = "ExportEntities" });
 
             // default routing
             app.MapControllerRoute(

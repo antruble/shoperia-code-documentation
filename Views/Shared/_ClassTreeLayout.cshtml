@@ -28,6 +28,11 @@
                             Adatbázis dokumentáció megnyitása...
                         </a>
                     </div>
+                    <div class="" style="margin-top:2px;">
+                        <button id="export-button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="window.location.href = '/export/files';">
+                            Export Database
+                        </button>
+                    </div>
                 </div>
                 <div class="flex-grow flex space-x-4 justify-around" id="mainCategoriesContainer">
                     @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
@@ -36,25 +41,6 @@
             <div class="flex space-x-4 w-full justify-around pb-6" id="subCategoriesContainer" >
                 @await Component.InvokeAsync("CTSubCategories", new { selectedRootName = @Model.RootFolderName, selectedSubRootName = @Model.SubFolderName })
             </div>
-            @* <div class="flex space-x-4">
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-                        </li>
-                        <li class="nav-item">
-                            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-                            </form>
-                        </li>
-                    </ul>
-                }
-                else
-                {
-                    <partial name="_LoginPartial" />
-                }
-            </div> *@
         </nav>
         <div class="flex items-center justify-center h-auto w-1/12">
             @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
@@ -134,6 +120,10 @@
                 console.error("Modal not found");
             }
         }
+
+        document.getElementById('export-button').addEventListener('click', () => {
+            window.location.href = '/api/export-database';
+        });
     </script>
 </body>
 </html>

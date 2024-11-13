@@ -66,7 +66,7 @@ namespace ShoperiaDocumentation.Controllers
             try
             {
                 await _fileProcessingService.ProcessDatabaseJsonAsync(JsonConvert.SerializeObject(jsonData), User);
-                _logger.LogInformation($"Sikeresen feltöltve {jsonData.Entities} darab adatbázis entitás!");
+                _logger.LogInformation($"Sikeresen feltöltve {jsonData.Entities.Count} darab adatbázis entitás!");
                 return Ok(new { message = "JSON data processed successfully." });
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace ShoperiaDocumentation.Controllers
             try
             {
                 await _fileProcessingService.ProcessJsonAsync(JsonConvert.SerializeObject(jsonData), User);
-                _logger.LogInformation($"Sikeresen feltöltve {jsonData.Files} darab fájl!");
+                _logger.LogInformation($"Sikeresen feltöltve {jsonData.Files.Count} darab fájl!");
                 return Ok(new { message = "JSON data processed successfully." });
             }
             catch (Exception ex)

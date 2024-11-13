@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Security.Principal;
 using static ShoperiaDocumentation.Services.FileProcessingService;
+using static System.Net.WebRequestMethods;
 using static System.Reflection.Metadata.Ecma335.MethodBodyStreamEncoder;
 
 namespace ShoperiaDocumentation.Services
@@ -1428,6 +1429,73 @@ namespace ShoperiaDocumentation.Services
             // Mentés az adatbázisba
         }
 
+        #endregion
+
+        #region EXPORT
+        public async Task<List<ExportFileDto>> GetFilesForExportAsync()
+        {
+            var exportData = new List<ExportFileDto>();
+
+            var files = await _context.Files
+                .Where(f => !f.IsEntity && !f.IsMapping)
+                .Include(f => f.Methods) // Tartalmazza a metódusokat
+                .ToListAsync();
+
+            foreach (var file in files)
+            {
+                var filePath = await GetFilePathAsync(file.Id); // Aszinkron hívás
+
+                exportData.Add(new ExportFileDto
+                {
+                    Path = filePath,
+                    Status = file.Status,
+                    Description = file.Description,
+                    Methods = file.Methods.Select(method => new ExportMethodDto
+                    {
+                        Name = method.Name,
+                        Description = method.Description,
+                        Code = method.FullCode,
+                        Status = method.Status
+                    }).ToList()
+                });
+            }
+
+            return exportData;
+
+        }
+        public async Task<List<ExportEntityDto>> GetEntitiesForExportAsync()
+        {
+            var exportData = new List<ExportEntityDto>();
+
+            var entities = await _context.Files
+                .Where(f => f.IsEntity)
+                .Include(f => f.Fields)
+                .ToListAsync();
+
+            foreach (var entity in entities)
+            {
+                var filePath = await GetFilePathAsync(entity.Id); // Aszinkron hívás
+
+                exportData.Add(new ExportEntityDto
+                {
+                    Path = filePath,
+                    Status = entity.Status,
+                    Description = entity.Description,
+                    Fields = entity.Fields.Select(field => new ExportFieldDto
+                    {
+                        Name = field.Name,
+                        Description = field.Description,
+                        Type = field.Type,
+                        IsForeignKey = field.IsForeignKey,
+                        IsPrimaryKey = field.IsPrimaryKey,
+                        IsNullable = field.IsNullable
+                    }).ToList()
+                });
+            }
+
+            return exportData;
+
+        }
         #endregion
     }
 }

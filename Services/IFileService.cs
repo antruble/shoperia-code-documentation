@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using ShoperiaDocumentation.Models;
 using ShoperiaDocumentation.Models.ViewModels;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using static ShoperiaDocumentation.Services.FileProcessingService;
 
 namespace ShoperiaDocumentation.Services
@@ -65,6 +67,11 @@ namespace ShoperiaDocumentation.Services
         Task<DatabaseViewModel> GetDatabaseViewModelAsync();
         Task<FileModel?> GetDatabaseEntityById(int id);
         Task UpdateDatabaseEntityAsync(int id, FileModel entity);
+        #endregion
+
+        #region EXPORT
+        Task<List<ExportFileDto>> GetFilesForExportAsync();
+        Task<List<ExportEntityDto>> GetEntitiesForExportAsync();
         #endregion
     }
 }

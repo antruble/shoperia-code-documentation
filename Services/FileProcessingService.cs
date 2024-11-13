@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using ShoperiaDocumentation.Models;
 using static ShoperiaDocumentation.Services.FileProcessingService;
 
 namespace ShoperiaDocumentation.Services
@@ -49,7 +50,14 @@ namespace ShoperiaDocumentation.Services
                     _logger.LogError($"Something went wrong while tried to get file name from the path: {filePath}");
                     continue;
                 }
-                int? fileId = await _fileService.CreateFileAsync(fileName, file.Status, parentId, user);
+                var tempFileModel = new FileModel 
+                { 
+                    Name = fileName,
+                    Description = file.Description,
+                    Status = file.Status,
+                    ParentId = parentId
+                };
+                int? fileId = await _fileService.CreateFileAsync(tempFileModel, user);
                 if (fileId == null)
                 {
                     _logger.LogError($"Something went wrong while tried to create the file from the path: {filePath}");
@@ -171,6 +179,9 @@ namespace ShoperiaDocumentation.Services
         {
             [JsonProperty("path")]
             public string Path { get; set; }
+            
+            [JsonProperty("description")]
+            public string Description { get; set; }
 
             [JsonProperty("status")]
             public string Status { get; set; } // "New" or "Modified"
