@@ -179,6 +179,11 @@ namespace ShoperiaDocumentation
                 name: "classtree-get-method-code",
                 pattern: "ClassTree/GetMethodCode/{id}",
                 defaults: new { controller = "ClassTree", action = "GetMethodCode" });
+            
+            app.MapControllerRoute(
+                name: "classtree-update-file-desc",
+                pattern: "/classtree/UpdateFileDescription",
+                defaults: new { controller = "ClassTree", action = "UpdateFileDescription" });
 
             //API
             app.MapControllerRoute(

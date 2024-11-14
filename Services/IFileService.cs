@@ -73,5 +73,7 @@ namespace ShoperiaDocumentation.Services
         Task<List<ExportFileDto>> GetFilesForExportAsync();
         Task<List<ExportEntityDto>> GetEntitiesForExportAsync();
         #endregion
+
+        Task<bool> UpdateFileDescriptionAsync(int id, string description);
     }
 }

@@ -144,3 +144,48 @@ function refreshContent() {
     const fileId = document.getElementById("fileId").value;
     loadContent(fileId);
 }
+
+async function editFileDesc(id) {
+    const saveButton = document.getElementById("save-button");
+    const cancelButton = document.getElementById("cancel-button");
+    const descriptionText = document.getElementById("description-text");
+    const editDescription = document.getElementById("edit-description");
+    const descriptionInput = document.getElementById("description-input")
+
+    descriptionText.style.display = "none";
+    editDescription.style.display = "block";
+    cancelButton.addEventListener("click", function () {
+        editDescription.style.display = "none";
+        descriptionText.style.display = "block";
+    });
+    saveButton.addEventListener("click", function () {
+        const newDescription = descriptionInput.value;
+        const fileId = descriptionInput.getAttribute('data-file-id');
+
+        fetch('/classtree/UpdateFileDescription', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ id: fileId, description: newDescription })
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Ha nem OK, feldobunk egy hibát
+                return response.json().then(error => {
+                    throw new Error(error.error || "An error occurred");
+                });
+            }
+            return response.json(); // JSON válasz feldolgozása
+        })
+        .then(data => {
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message);
+        });
+    });
+};
+

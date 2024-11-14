@@ -1519,5 +1519,36 @@ namespace ShoperiaDocumentation.Services
 
         }
         #endregion
+
+        public async Task<bool> UpdateFileDescriptionAsync(int id, string description)
+        {
+            try
+            {
+                // Keressük meg az adott ID-hoz tartozó fájlt
+                var file = await _context.Files.FirstOrDefaultAsync(f => f.Id == id);
+
+                // Ellenőrizzük, hogy a fájl létezik-e
+                if (file == null)
+                {
+                    return false; // Nem található
+                }
+
+                // Frissítsük a description mezőt
+                file.Description = description;
+
+                // Mentjük a változtatásokat
+                _context.Files.Update(file);
+                await _context.SaveChangesAsync();
+
+                return true; // Sikeres frissítés
+            }
+            catch (Exception ex)
+            {
+                // Hibakezelés (logolás vagy továbbdobás)
+                Console.WriteLine($"Error updating file description: {ex.Message}");
+                return false;
+            }
+        }
+
     }
 }

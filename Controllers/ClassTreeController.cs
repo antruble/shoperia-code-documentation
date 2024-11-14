@@ -177,5 +177,20 @@ namespace ShoperiaDocumentation.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateFileDescription([FromBody] UpdateFileDescriptionItemRequest request)
+        {
+            bool success = await _fileService.UpdateFileDescriptionAsync(request.Id, request.Description);
+            
+            if (success)
+            {
+                return Ok(new { message = "Success" });
+            }
+            else
+            {
+                return BadRequest("Failed to rename folder.");
+            }
+        }
     }
 }

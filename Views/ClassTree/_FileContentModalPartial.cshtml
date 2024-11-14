@@ -8,7 +8,24 @@
         </div>
         <p class="@(Model.IsNew ? "text-new" : "text-modified") text-md font-bold">@(Model.IsNew ? "NEW" : "MOD")</p>
         <h2 class="text-2xl font-bold">@Model.FileName<span class="@(Model.IsNew ? "text-new" : "text-modified")">.cs</span></h2>
-        <h3 class="text-lg text-gray-300 pl-2">@Model.Description</h3>
+        <div id="description-container">
+            <h3 class="text-lg text-gray-300 pl-2" id="description-text">
+                @Model.Description
+                @if (User.IsInRole("Admin"))
+                {
+                    <button id="edit-@Model.FileName-button" class="text-blue-500 ml-2" onclick="editFileDesc(1)">  Edit</button>
+                }
+            </h3>
+            @if (User.IsInRole("Admin"))
+            {
+                <div id="edit-description" style="display: none;">
+                    <textarea id="description-input" class="border rounded p-2 text-black w-full h-32" data-file-id="@Model.FileId">@Model.Description</textarea>
+                    <button id="save-button" class="text-green-500 ml-2">Save</button>
+                    <button id="cancel-button" class="text-red-500 ml-2">Cancel</button>
+                </div>
+
+            }
+        </div>
         @if(Model.IsMapping || Model.IsEntity)
         {
             var entityOrMapping = @Model.IsMapping ? "(Mapping)" : "(Entity)";
@@ -99,4 +116,3 @@
         }
     </div>
 </div>
-

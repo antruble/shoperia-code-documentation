@@ -41,17 +41,19 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Akciógombok -->
-    <div class="mt-4">
-        <button id="edit-button"
-                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                onclick="editDatabaseEntityAsync(@Model.Id)">
-            Edit
-        </button>
-        <button id="save-button"
-                class="hidden bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Save
-        </button>
-    </div>
+    @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+    {
+        <!-- Akciógombok -->
+        <div class="mt-4">
+            <button id="edit-button"
+                    class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    onclick="editDatabaseEntityAsync(@Model.Id)">
+                Edit
+            </button>
+            <button id="save-button"
+                    class="hidden bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Save
+            </button>
+        </div>
+    }
 </div>
