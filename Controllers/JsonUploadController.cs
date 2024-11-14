@@ -15,7 +15,7 @@ namespace ShoperiaDocumentation.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("Upload")]
+        [HttpPost]
         public async Task<IActionResult> UploadJsonFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -33,6 +33,35 @@ namespace ShoperiaDocumentation.Controllers
 
                         Console.WriteLine($"JSONDATA: {jsonData}");
                         await _fileProcessingService.ProcessJsonAsync(jsonData, User);
+                    }
+                }
+
+                return Ok(new { message = "File uploaded and processed successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Internal server error: {ex.Message}");
+            }
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPost("Entities/Upload")]
+        public async Task<IActionResult> UploadEntitiesJsonFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file was uploaded.");
+            try
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                    stream.Position = 0;
+
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var jsonData = await reader.ReadToEndAsync();
+
+                        Console.WriteLine($"JSONDATA: {jsonData}");
+                        await _fileProcessingService.ProcessDatabaseJsonAsync(jsonData, User);
                     }
                 }
 

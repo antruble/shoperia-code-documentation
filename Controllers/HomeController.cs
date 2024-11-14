@@ -69,7 +69,7 @@ namespace ShoperiaDocumentation.Controllers
             {
                 var exportData = await _fileService.GetEntitiesForExportAsync(); // Szolgáltatás hívása az exportálási adatokért
 
-                var json = JsonConvert.SerializeObject(new { files = exportData }, Formatting.Indented);
+                var json = JsonConvert.SerializeObject(new { entities = exportData }, Formatting.Indented);
 
                 // Fájl generálása és letöltés indítása
                 var fileName = "entities-export.json";

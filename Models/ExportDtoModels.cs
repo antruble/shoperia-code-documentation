@@ -23,6 +23,7 @@ namespace ShoperiaDocumentation.Models
         public string Path { get; set; }
         public string Status { get; set; }
         public string Description { get; set; }
+        public bool IsDatabaseEntity { get; set; }
         public List<ExportFieldDto> Fields { get; set; } = new();
     }
 

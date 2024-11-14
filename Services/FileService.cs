@@ -1465,10 +1465,10 @@ namespace ShoperiaDocumentation.Services
             foreach (var file in files)
             {
                 var filePath = await GetFilePathAsync(file.Id); // Aszinkron hívás
-
+                var pathWithFileName = Path.Combine(filePath, string.Concat(file.Name, ".cs"));
                 exportData.Add(new ExportFileDto
                 {
-                    Path = filePath,
+                    Path = pathWithFileName,
                     Status = file.Status,
                     Description = file.Description,
                     Methods = file.Methods.Select(method => new ExportMethodDto
@@ -1496,12 +1496,13 @@ namespace ShoperiaDocumentation.Services
             foreach (var entity in entities)
             {
                 var filePath = await GetFilePathAsync(entity.Id); // Aszinkron hívás
-
+                var pathWithFileName = Path.Combine(filePath, string.Concat(entity.Name, ".cs"));
                 exportData.Add(new ExportEntityDto
                 {
-                    Path = filePath,
+                    Path = pathWithFileName,
                     Status = entity.Status,
                     Description = entity.Description,
+                    IsDatabaseEntity = entity.IsDatabaseEntity,
                     Fields = entity.Fields.Select(field => new ExportFieldDto
                     {
                         Name = field.Name,

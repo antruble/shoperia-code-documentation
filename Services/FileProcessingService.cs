@@ -70,6 +70,7 @@ namespace ShoperiaDocumentation.Services
                     _logger.LogInformation($"Processing method: {method.Name} in file: {filePath}");
                     await _fileService.CreateOrUpdateMethodAsync(fileId ?? -1, method.Name, method.Description, method.Code, method.Status, user);
                 }
+
             }
         }
         public async Task ProcessDatabaseJsonAsync(string jsonData, ClaimsPrincipal user)  //TODO: PROCESS ENTITIES
@@ -83,7 +84,7 @@ namespace ShoperiaDocumentation.Services
 
             foreach (var entity in rootData.Entities)
             {
-                string entityPath = entity.RelativePath;
+                string entityPath = entity.Path;
                 _logger.LogInformation($"Processing entity: {entityPath}");
 
                 // Mappák létrehozása, ha nem léteznek
@@ -104,8 +105,16 @@ namespace ShoperiaDocumentation.Services
                     _logger.LogError($"Something went wrong while tried to get entity name from the path: {entityPath}");
                     continue;
                 }
-                var status = entity.IsNew ? "new" : "modified";
-                int? fileId = await _fileService.CreateFileAsync(fileName, status, parentId, user, isEntity: true, isDatabaseEntity: entity.IsDatabaseEntity);
+                var tempFileModel = new FileModel
+                {
+                    Name = fileName,
+                    Description = string.IsNullOrEmpty(entity.Description) ? string.Empty : entity.Description,
+                    Status = entity.Status,
+                    ParentId = parentId,
+                    IsDatabaseEntity = entity.IsDatabaseEntity,
+                    IsEntity = true
+                };
+                int? fileId = await _fileService.CreateFileAsync(tempFileModel, user);
                 if (fileId == null)
                 {
                     _logger.LogError($"Something went wrong while tried to create the entity with the {entityPath} path");
@@ -214,16 +223,19 @@ namespace ShoperiaDocumentation.Services
 
         public class EntityData
         {
-            [JsonProperty("RelativePath")]
-            public string RelativePath { get; set; }
+            [JsonProperty("path")]
+            public string Path { get; set; }
 
-            [JsonProperty("IsNew")]
-            public bool IsNew { get; set; } // "New" or "Modified"
+            [JsonProperty("status")]
+            public string Status { get; set; } // "New" or "Modified"
+            
+            [JsonProperty("description")]
+            public string? Description { get; set; }
 
             [JsonProperty("IsDatabaseEntity")]
             public bool IsDatabaseEntity { get; set; }
 
-            [JsonProperty("Fiels")]
+            [JsonProperty("Fields")]
             public List<FieldData>? Fields{ get; set; }
 
             [JsonProperty("Mapping")]

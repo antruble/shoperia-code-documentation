@@ -185,6 +185,11 @@ namespace ShoperiaDocumentation
                 name: "api-jsonupload",
                 pattern: "api/JsonUpload/Upload",
                 new { controller = "JsonUpload", action = "UploadJsonFile" });
+            
+            app.MapControllerRoute(
+                name: "api-jsonupload",
+                pattern: "api/JsonUpload/Entities/Upload",
+                new { controller = "JsonUpload", action = "UploadEntitiesJsonFile" });
 
             app.MapControllerRoute(
                 name: "api-checkfileexists",

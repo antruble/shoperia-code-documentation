@@ -45,7 +45,7 @@ namespace ShoperiaDocumentation.Data
                     logger.LogError("Failed to create admin user. Errors: {Errors}", string.Join(", ", createAdmin.Errors.Select(e => e.Description)));
                 }
             }
-
+            logger.LogInformation($"lefut1..");
             var basicUser = new IdentityUser
             {
                 UserName = "user@user.com",
@@ -64,13 +64,14 @@ namespace ShoperiaDocumentation.Data
                     await userManager.AddToRoleAsync(basicUser, "User");
                 }
             }
-
+            logger.LogInformation($"lefut2..");
             // Folder seeding logic
             using (var context = new ApplicationDbContext(serviceProvider.GetRequiredService<DbContextOptions<ApplicationDbContext>>()))
             {
+                logger.LogInformation($"lefut3..");
                 // Ensure the database is created
                 context.Database.Migrate();
-
+                logger.LogInformation($"lefut4..");
                 // Look for any folders.
                 if (context.Folders.Any())
                 {
@@ -110,10 +111,11 @@ namespace ShoperiaDocumentation.Data
                 };
 
                 context.Folders.AddRange(subFolders);
-
+                logger.LogInformation($"lefut5..");
                 try
                 {
                     await context.SaveChangesAsync();
+                    logger.LogInformation($"lefut6..");
                 }
                 catch (Exception ex)
                 {

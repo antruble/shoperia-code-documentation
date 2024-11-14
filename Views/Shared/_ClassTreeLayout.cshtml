@@ -28,11 +28,11 @@
                             Adatbázis dokumentáció megnyitása...
                         </a>
                     </div>
-                    <div class="" style="margin-top:2px;">
+                    @* <div class="" style="margin-top:2px;">
                         <button id="export-button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="window.location.href = '/export/files';">
                             Export Database
                         </button>
-                    </div>
+                    </div> *@
                 </div>
                 <div class="flex-grow flex space-x-4 justify-around" id="mainCategoriesContainer">
                     @await Component.InvokeAsync("CTMainCategories", new { selectedRootName = @Model.RootFolderName })
@@ -54,6 +54,10 @@
                         <h1>Admin felület</h1>
                         <form id="uploadForm" enctype="multipart/form-data" class="">
                             <input type="file" id="jsonFile" name="jsonFile" accept=".json" required />
+                            <label>
+                                <input type="checkbox" id="uploadEntities" />
+                                    Feltöltés entitásokként
+                            </label>
                             <button type="submit">Upload</button>
                         </form>
                     </div>
@@ -86,11 +90,19 @@
 
             const formData = new FormData();
             const fileInput = document.getElementById('jsonFile');
+            const uploadEntities = document.getElementById('uploadEntities').checked;
+
             formData.append('file', fileInput.files[0]);
+
+            const endpoint = uploadEntities 
+        ? '/api/JsonUpload/Entities/Upload'
+        : '/api/JsonUpload/Upload';
+
+
             console.log(formData)
 
             try {
-                const response = await fetch('/api/JsonUpload/Upload', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });
@@ -121,9 +133,9 @@
             }
         }
 
-        document.getElementById('export-button').addEventListener('click', () => {
-            window.location.href = '/api/export-database';
-        });
+        // document.getElementById('export-button').addEventListener('click', () => {
+        //     window.location.href = '/api/export-database';
+        // });
     </script>
 </body>
 </html>

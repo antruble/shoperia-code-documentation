@@ -12,8 +12,8 @@ using ShoperiaDocumentation.Data;
 namespace ShoperiaDocumentation.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241004095233_CreateFieldModel")]
-    partial class CreateFieldModel
+    [Migration("20241114122652_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -241,6 +241,11 @@ namespace ShoperiaDocumentation.Migrations
                     b.Property<string>("DefaultValue")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<int>("FileId")
                         .HasColumnType("int");
 
@@ -280,6 +285,19 @@ namespace ShoperiaDocumentation.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDatabaseEntity")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEntity")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMapping")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -327,6 +345,42 @@ namespace ShoperiaDocumentation.Migrations
                     b.ToTable("Folders");
                 });
 
+            modelBuilder.Entity("ShoperiaDocumentation.Models.MappingModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsNew")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ParentEntitysName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId")
+                        .IsUnique()
+                        .HasFilter("[ParentId] IS NOT NULL");
+
+                    b.ToTable("Mappings");
+                });
+
             modelBuilder.Entity("ShoperiaDocumentation.Models.MethodModel", b =>
                 {
                     b.Property<int>("Id")
@@ -342,6 +396,7 @@ namespace ShoperiaDocumentation.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("FullCode")
+                        .HasMaxLength(2147483647)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -439,6 +494,15 @@ namespace ShoperiaDocumentation.Migrations
                     b.Navigation("ParentFolder");
                 });
 
+            modelBuilder.Entity("ShoperiaDocumentation.Models.MappingModel", b =>
+                {
+                    b.HasOne("ShoperiaDocumentation.Models.FileModel", "ParentFile")
+                        .WithOne("Mapping")
+                        .HasForeignKey("ShoperiaDocumentation.Models.MappingModel", "ParentId");
+
+                    b.Navigation("ParentFile");
+                });
+
             modelBuilder.Entity("ShoperiaDocumentation.Models.MethodModel", b =>
                 {
                     b.HasOne("ShoperiaDocumentation.Models.FileModel", "FileModel")
@@ -453,6 +517,8 @@ namespace ShoperiaDocumentation.Migrations
             modelBuilder.Entity("ShoperiaDocumentation.Models.FileModel", b =>
                 {
                     b.Navigation("Fields");
+
+                    b.Navigation("Mapping");
 
                     b.Navigation("Methods");
                 });

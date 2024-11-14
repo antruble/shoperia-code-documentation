@@ -182,9 +182,13 @@ namespace ShoperiaDocumentation.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ParentId = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    IsEntity = table.Column<bool>(type: "bit", nullable: false),
+                    IsDatabaseEntity = table.Column<bool>(type: "bit", nullable: false),
+                    IsMapping = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -197,6 +201,56 @@ namespace ShoperiaDocumentation.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Fields",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FileId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    IsNullable = table.Column<bool>(type: "bit", nullable: false),
+                    DefaultValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsPrimaryKey = table.Column<bool>(type: "bit", nullable: false),
+                    IsForeignKey = table.Column<bool>(type: "bit", nullable: false),
+                    ForeignTable = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Fields", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Fields_Files_FileId",
+                        column: x => x.FileId,
+                        principalTable: "Files",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Mappings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RelativePath = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsNew = table.Column<bool>(type: "bit", nullable: false),
+                    ParentEntitysName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ParentId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Mappings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Mappings_Files_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Files",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Methods",
                 columns: table => new
                 {
@@ -205,7 +259,7 @@ namespace ShoperiaDocumentation.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FullCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FullCode = table.Column<string>(type: "nvarchar(max)", maxLength: 2147483647, nullable: true),
                     FileId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -259,6 +313,11 @@ namespace ShoperiaDocumentation.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Fields_FileId",
+                table: "Fields",
+                column: "FileId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Files_ParentId",
                 table: "Files",
                 column: "ParentId");
@@ -267,6 +326,13 @@ namespace ShoperiaDocumentation.Migrations
                 name: "IX_Folders_ParentId",
                 table: "Folders",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Mappings_ParentId",
+                table: "Mappings",
+                column: "ParentId",
+                unique: true,
+                filter: "[ParentId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Methods_FileId",
@@ -291,6 +357,12 @@ namespace ShoperiaDocumentation.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Fields");
+
+            migrationBuilder.DropTable(
+                name: "Mappings");
 
             migrationBuilder.DropTable(
                 name: "Methods");
