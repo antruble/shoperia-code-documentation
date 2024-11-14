@@ -11,6 +11,8 @@ namespace ShoperiaDocumentation.Models
         public required string Name { get; set; }
         public required string Status { get; set; } // "New" or "Modified"
         public string? Description { get; set; }
+        
+        [StringLength(int.MaxValue)]
         public string? FullCode { get; set; }
 
         // Külső kulcs a kapcsolódó fájl azonosítójához

@@ -6,9 +6,18 @@
 @foreach (var folder in Model)
 {
     var isSelected = folder.Name == selectedSubRootName;
-    <a href="@Url.Action("Index", "ClassTree", new { path = $"{selectedRootName}/{folder.Name}" })?.Replace("%2F", "/")" class="text-3xl text-white hover-custom-text @(isSelected ? "underline underline-offset-4 decoration-violet-900" : "")">
-        <div class="">
+    @if (folder.Name == "Nop.Web.Framework")
+    {
+        <div class=" text-3xl text-gray-500">
             <span>@folder.Name</span>
         </div>
-    </a>
+    }
+    else
+    {
+        <a href="@Url.Action("Index", "ClassTree", new { path = $"{selectedRootName}/{folder.Name}" })?.Replace("%2F", "/")" class="text-3xl text-white hover-custom-text @(isSelected ? "underline underline-offset-4 decoration-violet-900" : "")">
+            <div class="">
+                <span>@folder.Name</span>
+            </div>
+        </a>
+    }
 }

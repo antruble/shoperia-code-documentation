@@ -53,7 +53,7 @@ namespace ShoperiaDocumentation.Services
                 var tempFileModel = new FileModel 
                 { 
                     Name = fileName,
-                    Description = file.Description,
+                    Description = string.IsNullOrEmpty(file.Description) ? string.Empty : file.Description,
                     Status = file.Status,
                     ParentId = parentId
                 };
@@ -181,7 +181,7 @@ namespace ShoperiaDocumentation.Services
             public string Path { get; set; }
             
             [JsonProperty("description")]
-            public string Description { get; set; }
+            public string? Description { get; set; }
 
             [JsonProperty("status")]
             public string Status { get; set; } // "New" or "Modified"

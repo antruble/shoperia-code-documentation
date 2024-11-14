@@ -114,6 +114,7 @@ namespace ShoperiaDocumentation.Services
                 {
                     FileId = fileId,
                     FileName = file.Name,
+                    Description = file.Description,
                     RelativePath = relativePath,
                     Fields = file.Fields,
                     IsNew = file.Status == "new",
@@ -146,6 +147,7 @@ namespace ShoperiaDocumentation.Services
                 responseModel = new FileContentViewModel
                 {
                     FileId = fileId,
+                    Description = file.Description,
                     FileName = file.Name,
                     RelativePath = relativePath,
                     Methods = file.Methods,
@@ -415,14 +417,30 @@ namespace ShoperiaDocumentation.Services
             bool nameAlreadyExist = await _context.Files.AnyAsync(f => f.ParentId == file.ParentId && f.Name == file.Name);
             if (nameAlreadyExist)
             {
+                bool hasChanges = false;
                 var existingFile = await _context.Files.FirstOrDefaultAsync(f => f.Name == file.Name && f.ParentId == file.ParentId);
                 if (file.IsEntity)
                 {
                     if (!existingFile.IsEntity)
+                    {
                         existingFile.IsEntity = true;
+                        hasChanges = true;
+                    }
                     if (existingFile.IsDatabaseEntity != file.IsDatabaseEntity)
+                    {
                         existingFile.IsDatabaseEntity = file.IsDatabaseEntity;
+                        hasChanges = true;
+                    }
+                }
+                if (string.IsNullOrEmpty(existingFile.Description) && !string.IsNullOrEmpty(file.Description))
+                {
+                    _logger.LogInformation("Succesfully updated {FileName} files description.", file.Name);
+                    existingFile.Description = file.Description;
+                    hasChanges = true;
+                }
 
+                if (hasChanges)
+                {
                     try
                     {
                         _context.Files.Update(existingFile);
@@ -433,7 +451,10 @@ namespace ShoperiaDocumentation.Services
                         _logger.LogWarning("Failed to update {FileName} file while tried to update isEntity or isDatabaseEntity: {ex}", file.Name, ex.Message);
                     }
                 }
-                _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", file.Name);
+                else 
+                { 
+                    _logger.LogWarning("Failed to create {FileName} file, because there is already a file with this name in its directory.", file.Name);
+                }
                 return existingFile?.Id;
             }
 
