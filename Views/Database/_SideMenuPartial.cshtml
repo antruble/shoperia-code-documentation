@@ -33,8 +33,7 @@
         <input type="text"
                 id="searchBar"
                 placeholder="Search..."
-                class="w-full py-2 px-4 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-700 text-black"
-                oninput="handleSearchInput(event)" />
+                class="w-full py-2 px-4 rounded-md border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-700 text-black"/>
     </div>
     <div class="flex flex-col gap-1 overflow-y-scroll px-2">
         @if (Model != null && Model.Entities != null)
@@ -108,19 +107,13 @@
             }
         }
 
-        // Keresés kezelése
-        function handleSearchInput(event) {
-            const query = event.target.value.toLowerCase();
-
+        searchBar.addEventListener('input', () => {
+            const query = searchBar.value.toLowerCase();
             entityMenus.forEach((item) => {
                 const text = item.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    item.style.display = 'block'; // Megjelenítés, ha illeszkedik
-                } else {
-                    item.style.display = 'none'; // Elrejtés, ha nem illeszkedik
-                }
+                item.style.display = text.includes(query) ? 'block' : 'none';
             });
-        }
+        });
 
         // Keresés törlése
         function clearSearch() {

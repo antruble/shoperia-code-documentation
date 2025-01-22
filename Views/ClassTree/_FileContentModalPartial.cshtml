@@ -66,12 +66,14 @@
                             <span class="mr-2">Leírás:</span>
                             <!-- Leírás konténer -->
                             <span id="description-@field.Id">@field.Description</span>
-
-                            <!-- Szerkesztés gomb -->
-                            <button class="px-2 py-1 ml-4 bg-gray-500 text-white rounded"
-                                    onclick="enableEditing(@Model.FileId, @field.Id, '@field.Description')">
-                                Szerkesztés
-                            </button>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <!-- Szerkesztés gomb -->
+                                <button class="px-2 py-1 ml-4 bg-gray-500 text-white rounded"
+                                onclick="enableEditing(@Model.FileId, @field.Id, '@field.Description')">
+                                    Szerkesztés
+                                </button>
+                            }
                         </div>
                     </div>
                 }
