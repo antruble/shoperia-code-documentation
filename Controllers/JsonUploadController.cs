@@ -15,7 +15,7 @@ namespace ShoperiaDocumentation.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPost]
+        [HttpPost("Upload")]
         public async Task<IActionResult> UploadJsonFile(IFormFile file)
         {
             if (file == null || file.Length == 0)

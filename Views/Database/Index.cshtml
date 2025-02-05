@@ -43,7 +43,7 @@
         // Szerkesztések mentése
         saveButton.addEventListener('click', async () => {
             const updatedDescription = descriptionEditor.value;
-
+            console.log("asd")
             const updatedFields = Array.from(fieldDescriptionsEditor).map((editor) => ({
                 name: editor.closest('tr').children[0].textContent.trim(), // Field name
                 description: editor.value // Updated description
@@ -63,9 +63,10 @@
                 });
 
                 if (!response.ok) {
+                    console.log("asd22")
                     throw new Error('Failed to save changes.');
                 }
-
+                console.log("asd2")
                 // Visszatérés megtekintési módhoz
                 descriptionView.textContent = updatedDescription;
                 descriptionView.classList.remove('hidden');

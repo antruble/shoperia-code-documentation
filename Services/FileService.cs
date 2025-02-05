@@ -1354,6 +1354,7 @@ namespace ShoperiaDocumentation.Services
                 var databaseEntities = await _context.Files
                     .Include(f => f.Fields)
                     .Where(f => f.IsDatabaseEntity)
+                    .OrderBy(f => f.Name)
                     .ToListAsync() 
                     ?? new List<FileModel>();
 
